@@ -1,23 +1,112 @@
 ﻿@inherits LayoutComponentBase
+@using Microsoft.AspNetCore.Identity
+@using QuickUnity.Common
+@using QuickUnity.Data
+@inject ThemeService ThemeService
+@inject NavigationManager Nav
+@* idk why, required by radzen *@
+@inject CookieThemeService CookieThemeService
+@inject SignInManager<ApplicationUser> SignInManager
 
-<div class="page">
-    <div class="sidebar">
-        <NavMenu/>
-    </div>
-
-    <main>
-        <div class="top-row px-4">
-            <a href="https://learn.microsoft.com/aspnet/core/" target="_blank">About</a>
-        </div>
-
-        <article class="content px-4">
+<RadzenLayout>
+    <RadzenComponents @rendermode="InteractiveServer"/>
+    <RadzenHeader>
+        <RadzenStack Orientation="Orientation.Horizontal" AlignItems="AlignItems.Center" JustifyContent="JustifyContent.SpaceBetween" Gap="0">
+            <RadzenSidebarToggle Click="@(() => _sidebarExpanded = !_sidebarExpanded)"/>
+            <RadzenStack Orientation="Orientation.Horizontal" JustifyContent="JustifyContent.Center" Gap="0.5rem" class="rz-p-sm-2">
+                @foreach (var theme in Themes.All.Where(x => new[] { "material", "standard", "standard-dark", "dark", "humanistic" }.Contains(x.Value)))
+                {
+                    var isChosen = ThemeService.Theme == theme.Value;
+                    var icon = isChosen ? "check_circle" : "add_circle";
+                    var border = isChosen ? "border: 5px solid green;" : "";
+                    var style = $"background-color: {theme.Base}; color: {theme.Primary}; {border}";
+                    <RadzenButton Icon=@icon Style="@style" Click="@(() => ChangeTheme(theme.Value))" ButtonStyle="ButtonStyle.Primary" Size="ButtonSize.Small" class="rz-border-radius-10 rz-shadow-6"/>
+                }
+                <RadzenProfileMenu>
+                    <Template>
+                        <RadzenGravatar Email="user@example.com"/>
+                    </Template>
+                    <ChildContent>
+                        <AuthorizeView>
+                            <Authorized>
+                                <RadzenProfileMenuItem Text=@(context.User.Identity?.Name != null ? context.User.Identity.Name[..context.User.Identity.Name.IndexOf('@')] : "account")
+                                                       Path="@AppRoutes.Manage" Icon="person"></RadzenProfileMenuItem>
+                                <RadzenProfileMenuItem Text="Notification" Path="@AppRoutes.Notifications" Icon="notifications"></RadzenProfileMenuItem>
+                                <RadzenProfileMenuItem Text="Settings" Path="@AppRoutes.Settings" Icon="settings"></RadzenProfileMenuItem>
+                            </Authorized>
+                            <NotAuthorized>
+                                <RadzenProfileMenuItem Text="Login" Path="@AppRoutes.Login" Icon="login"></RadzenProfileMenuItem>
+                                <RadzenProfileMenuItem Text="Register" Path="@AppRoutes.Register" Icon="app_registration"></RadzenProfileMenuItem>
+                            </NotAuthorized>
+                        </AuthorizeView>
+                        <RadzenProfileMenuItem Text="Info" Path="@AppRoutes.Info" Icon="info"></RadzenProfileMenuItem>
+                        <AuthorizeView>
+                            <Authorized>
+                                <div class="nav-item px-3">
+                                    <form action="Account/Logout" method="post">
+                                        <AntiforgeryToken/>
+                                        <input type="hidden" name="ReturnUrl" value="@currentUrl"/>
+                                        <RadzenButton ButtonType="ButtonType.Submit">Logout</RadzenButton>
+                                    </form>
+                                </div>
+                            </Authorized>
+                        </AuthorizeView>
+                    </ChildContent>
+                </RadzenProfileMenu>
+            </RadzenStack>
+        </RadzenStack>
+    </RadzenHeader>
+    <RadzenSidebar Responsive="false" Style="width: max-content">
+        <RadzenPanelMenu DisplayStyle="@(_sidebarExpanded ? MenuItemDisplayStyle.IconAndText : MenuItemDisplayStyle.Icon)" ShowArrow="false">
+            <RadzenPanelMenuItem Text="Home" Icon="home" Path=""/>
+            <RadzenPanelMenuItem Text="Trainers" Icon="self_improvement" Path="@AppRoutes.Trainers"/>
+            <RadzenPanelMenuItem Text="Techniques" Icon="sports_kabaddi" Path="@AppRoutes.Techniques">
+            </RadzenPanelMenuItem>
+            <RadzenPanelMenuItem Text="Settings" Icon="dashboard"/>
+        </RadzenPanelMenu>
+    </RadzenSidebar>
+    <RadzenBody>
+        <div class="rz-p-4">
             @Body
-        </article>
-    </main>
-</div>
+        </div>
+    </RadzenBody>
+    <RadzenFooter>
+        Footer
+    </RadzenFooter>
+</RadzenLayout>
 
-<div id="blazor-error-ui">
-    An unhandled error has occurred.
-    <a href="" class="reload">Reload</a>
-    <a class="dismiss">🗙</a>
-</div>
+@code{
+    private bool _sidebarExpanded = true;
+    private string? currentUrl;
+    
+    private void OnLocationChanged(object? sender, LocationChangedEventArgs e)
+    {
+        currentUrl = Nav.ToBaseRelativePath(e.Location);
+        StateHasChanged();
+    }
+    
+    protected override void OnInitialized()
+    {
+        currentUrl = Nav.ToBaseRelativePath(Nav.Uri);
+        Nav.LocationChanged += OnLocationChanged;
+    }
+    
+    public void Dispose()
+    {
+        Nav.LocationChanged -= OnLocationChanged;
+    }
+
+
+    void ChangeTheme(string value)
+    {
+        ThemeService.SetTheme(value);
+        StateHasChanged();
+    }
+    
+    private async Task Logout()
+    {
+        await SignInManager.SignOutAsync();
+        Nav.NavigateTo("/");
+    }
+
+}

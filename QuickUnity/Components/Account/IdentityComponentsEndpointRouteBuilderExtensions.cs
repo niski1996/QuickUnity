@@ -10,7 +10,7 @@ using QuickUnity.Components.Account.Pages;
 using QuickUnity.Components.Account.Pages.Manage;
 using QuickUnity.Data;
 
-namespace Microsoft.AspNetCore.Routing;
+namespace QuickUnity.Components.Account;
 
 internal static class IdentityComponentsEndpointRouteBuilderExtensions
 {
