@@ -2,8 +2,6 @@
 Microsoft Visual Studio Solution File, Format Version 12.00
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "QuickUnity", "QuickUnity\QuickUnity.csproj", "{C65DA9CF-F473-48E7-8921-8B578FEA0FF3}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DrillRoad.UI", "..\RoadMapBJJ.UI\DrillRoad.UI\DrillRoad.UI.csproj", "{73764A0D-431F-44A3-BD2B-5009CF714471}"
-EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -14,9 +12,5 @@ Global
 		{C65DA9CF-F473-48E7-8921-8B578FEA0FF3}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{C65DA9CF-F473-48E7-8921-8B578FEA0FF3}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{C65DA9CF-F473-48E7-8921-8B578FEA0FF3}.Release|Any CPU.Build.0 = Release|Any CPU
-		{73764A0D-431F-44A3-BD2B-5009CF714471}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{73764A0D-431F-44A3-BD2B-5009CF714471}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{73764A0D-431F-44A3-BD2B-5009CF714471}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{73764A0D-431F-44A3-BD2B-5009CF714471}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal
