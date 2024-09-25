@@ -8,9 +8,10 @@
 
 <PageTitle>File Upload 1</PageTitle>
 <RadzenStack Visible="@(tempPatch is not null)">
-    <RadzenImage Path="@tempPatch"></RadzenImage>
-    <RadzenButton Click="@(()=>confirmAction.Invoke(true))">Accept</RadzenButton>
-    <RadzenButton Click="@(()=>confirmAction.Invoke(false))">Reject</RadzenButton>
+    <RadzenImage Path="Storage/img.png"></RadzenImage>
+    <img src="@tempPatch" alt="Uploaded Image" style="max-width:400px; max-height:400px;"/>
+    <RadzenButton Click="@(() => confirmAction.Invoke(true))">Accept</RadzenButton>
+    <RadzenButton Click="@(() => confirmAction.Invoke(false))">Reject</RadzenButton>
 </RadzenStack>
 <RadzenCard Variant="Variant.Outlined">
     <RadzenText TextStyle="TextStyle.Subtitle2" TagName="TagName.H3">Upload client-side without Url</RadzenText>
@@ -47,6 +48,7 @@
                 };
                 var tmp =await MediaService.SaveFileAsync(request);
                 tempPatch = tmp.Key;
+                Console.WriteLine(tempPatch);
                 confirmAction = tmp.Value;
                 StateHasChanged();
 
