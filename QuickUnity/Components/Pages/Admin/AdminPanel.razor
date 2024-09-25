@@ -5,8 +5,10 @@
 @using Microsoft.EntityFrameworkCore
 @using QuickUnity.Common
 @using QuickUnity.Data
+@using QuickUnity.Services
 @inject ApplicationDbContext Context;
 @inject IServiceScopeFactory ScopeFactory;
+@inject MediaStorageService MediaService
 
 <RadzenDataGrid AllowFiltering="true" AllowColumnResize="true" AllowAlternatingRows="false" FilterMode="FilterMode.Advanced" AllowSorting="true" PageSize="20" AllowPaging="true" PagerHorizontalAlign="HorizontalAlign.Left" ShowPagingSummary="true"
                 Data="@users" ColumnWidth="300px" LogicalFilterOperator="LogicalFilterOperator.Or" SelectionMode="DataGridSelectionMode.Single" >
@@ -14,7 +16,15 @@
         <RadzenDataGridColumn Property="@nameof(UserDto.Id)" Filterable="false" Title="ID" Frozen="true" Width="80px" TextAlign="TextAlign.Center" />
         <RadzenDataGridColumn Title="Photo" Frozen="true" Sortable="false" Filterable="false" Width="80px" TextAlign="TextAlign.Center" >
             <Template Context="data">
-                <RadzenImage Path="@data.photoPath" class="rz-gravatar" AlternateText="@(data.Name + " " + data.LastName)" />
+                @if (File.Exists(MediaService.GetAvatarPatch(data.Username)))
+                {
+                <RadzenImage Style="width: 32px; height: 32px; border-radius: 50%;" Path="@MediaService.GetAvatarRelativePatch(data.Username)"></RadzenImage>
+                }
+                else
+                {
+                <RadzenGravatar Email=@(data.Username)/>
+                }
+                <RadzenImage Path="@data.photoPath" class="rz-gravatar" AlternateText="@(data.Name + " " + data.LastName)"/>
             </Template>
         </RadzenDataGridColumn>
         <RadzenDataGridColumn Property="@nameof(UserDto.Name)" Title="First Name" Frozen="true" Width="160px" />

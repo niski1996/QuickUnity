@@ -31,11 +31,14 @@ namespace QuickUnity.Services
             }
         }
 
-        public string GetAvatarPatch(string UserId, string ImageId)
+        public string GetAvatarRelativePatch(string UserId)
         {
-            return Path.Combine(_storageFolderName, UserId, "image", $"{ImageId}.png");
+            return Path.Combine(_relativeUploadPath, UserId, "image", "avatar.png");
         }
-
+        public string GetAvatarPatch(string UserId)
+        {
+            return Path.Combine(_uploadPath, UserId, "image", "avatar.png");
+        }
         public string GetVideoPatch(string UserId, string VideoId)
         {
             return Path.Combine(_uploadPath, UserId, "video", $"{VideoId}.mp4");

@@ -1,12 +1,17 @@
 ﻿@inherits LayoutComponentBase
 @using Microsoft.AspNetCore.Identity
 @using QuickUnity.Common
+@using QuickUnity.Components.Modals
+@using QuickUnity.Components.Pages
 @using QuickUnity.Data
+@using QuickUnity.Services
 @inject ThemeService ThemeService
 @inject NavigationManager Nav
 @* idk why, required by radzen *@
 @inject CookieThemeService CookieThemeService
 @inject SignInManager<ApplicationUser> SignInManager
+@inject DialogService DialogService
+@inject MediaStorageService MediaService
 
 <RadzenLayout>
     <RadzenComponents @rendermode="InteractiveServer"/>
@@ -24,13 +29,26 @@
                 }
                 <RadzenProfileMenu>
                     <Template>
-                        <RadzenGravatar Email="user@example.com"/>
+
+                        <AuthorizeView>
+                                
+                            @if (File.Exists(MediaService.GetAvatarPatch(context.User.Identity?.Name ?? "")))
+                            {
+                                <RadzenImage Style="width: 32px; height: 32px; border-radius: 50%;" Path="@MediaService.GetAvatarRelativePatch(context.User.Identity?.Name ?? "")"></RadzenImage>
+                            }
+                            else
+                            {
+                                <RadzenGravatar Email=@(context.User.Identity?.Name ?? "dummy")/>
+                            }
+                            </AuthorizeView>
                     </Template>
+                    
                     <ChildContent>
                         <AuthorizeView>
                             <Authorized>
                                 <RadzenProfileMenuItem Text=@(context.User.Identity?.Name != null ? context.User.Identity.Name[..context.User.Identity.Name.IndexOf('@')] : "account")
                                                        Path="@AppRoutes.Manage" Icon="person"></RadzenProfileMenuItem>
+                                <RadzenProfileMenuItem Text="Notification" Path="@AppRoutes.Notifications" Icon="notifications"></RadzenProfileMenuItem>
                                 <RadzenProfileMenuItem Text="Notification" Path="@AppRoutes.Notifications" Icon="notifications"></RadzenProfileMenuItem>
                                 <RadzenProfileMenuItem Text="Settings" Path="@AppRoutes.Settings" Icon="settings"></RadzenProfileMenuItem>
                             </Authorized>
@@ -39,14 +57,14 @@
                                 <RadzenProfileMenuItem Text="Register" Path="@AppRoutes.Register" Icon="app_registration"></RadzenProfileMenuItem>
                             </NotAuthorized>
                         </AuthorizeView>
-                        <RadzenProfileMenuItem Text="Info" Path="@AppRoutes.Info" Icon="info"></RadzenProfileMenuItem>
                         <AuthorizeView>
                             <Authorized>
+                                <RadzenButton Variant="Variant.Text" Click="@(async () => await ShowAvatarModal(context.User.Identity.Name))">Change Avatar</RadzenButton>
                                 <div class="nav-item px-3">
                                     <form action="Account/Logout" method="post">
                                         <AntiforgeryToken/>
                                         <input type="hidden" name="ReturnUrl" value="@currentUrl"/>
-                                        <RadzenButton ButtonType="ButtonType.Submit">Logout</RadzenButton>
+                                        <RadzenButton ButtonType="ButtonType.Submit" Variant="Variant.Text" Style="width: 100%">Logout</RadzenButton>
                                     </form>
                                 </div>
                             </Authorized>
@@ -95,6 +113,17 @@
     public void Dispose()
     {
         Nav.LocationChanged -= OnLocationChanged;
+    }
+
+    public async Task ShowAvatarModal(string userId)
+    {
+        await DialogService.OpenAsync<AvatarLoaderModal>($"Avatar choose",
+            new Dictionary<string, object>() { { "UserId", userId } },
+            new DialogOptions() 
+            {
+                Resizable = true, 
+                Draggable = true,
+            });
     }
 
 
