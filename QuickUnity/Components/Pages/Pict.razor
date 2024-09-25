@@ -50,24 +50,7 @@
                 confirmAction = tmp.Value;
                 StateHasChanged();
 
-                // using (var stream = file.OpenReadStream(MaxFileSize))
-                // {
-                //     var uploadPath = Path.Combine(Environment.ContentRootPath, "Uploads");
-                //
-                //     if (!Directory.Exists(uploadPath))
-                //     {
-                //         Directory.CreateDirectory(uploadPath);
-                //     }
-                //
-                //     var filePath = Path.Combine(uploadPath, file.Name);
-                //
-                //     using (var fileStream = new FileStream(filePath, FileMode.Create))
-                //     {
-                //         await stream.CopyToAsync(fileStream);
-                //     }
-                //
-                //     Console.WriteLine($"File {file.Name} uploaded successfully.");
-                // }
+
             }
             catch (Exception ex)
             {

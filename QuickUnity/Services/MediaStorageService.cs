@@ -1,11 +1,14 @@
 using QuickUnity.Entities;
 using QuickUnity.Entities.Enums;
+using FileInfo = Radzen.FileInfo;
 
 namespace QuickUnity.Services;
 
 public class MediaStorageService
 {
     private readonly string _uploadPath;
+
+    private readonly string tmpPrefix = "_tmp_";
     
     public string GetAvatarPatch(string UserId, string ImageId) => throw 
     public string GetVideoPatch(string UserId, string VideoId) => throw 
@@ -45,19 +48,11 @@ public class MediaStorageService
             case MultimediaType.Image:
                 return await PostponedSaveImageWithPreviewAsync(mediaSaveRequest);
             case MultimediaType.Video:
-                await SaveVideoAsync(mediaSaveRequest);
                 break;
             default: throw new Exception($"Unknown media type: {mediaSaveRequest.mediaType}");
                 
         }
-    }
-
-    private async Task SaveVideoAsync(MediaSaveRequest mediaSaveRequest)
-    {
-        var userStoragePath = Path.Combine(_uploadPath, mediaSaveRequest.OwnerId.ToString(), "video");
-        var filePath = Path.Combine(userStoragePath, $"{mediaSaveRequest.MediaId}.mp4");
-
-        await File.WriteAllBytesAsync(filePath, mediaSaveRequest.fileContent);
+        throw new Exception($"media type not yet handled: {mediaSaveRequest.mediaType}");
     }
 
     private async Task<KeyValuePair<string, Action<bool>>>  PostponedSaveImageWithPreviewAsync(MediaSaveRequest mediaSaveRequest)
@@ -67,9 +62,41 @@ public class MediaStorageService
         //resize to 400x400
         var userStoragePath = Path.Combine(_uploadPath, mediaSaveRequest.OwnerId.ToString(), "image");
         //check if in path exist file _tmp_avatar.png if yes, then delete
-        var filePath = Path.Combine(userStoragePath, "_tmp_avatar.png");
+        var tmpFilePath = Path.Combine(userStoragePath, $"{tmpPrefix}{mediaSaveRequest.MediaId}.png");
+        var FilePath = Path.Combine(userStoragePath, $"{mediaSaveRequest.MediaId}.png");
 
-        await File.WriteAllBytesAsync(filePath, mediaSaveRequest.fileContent);
+        
+
+        await SaveFileAsync(tmpFilePath, mediaSaveRequest.fileContent, 10 * 1024 * 1024);
+        // await File.WriteAllBytesAsync(filePath, mediaSaveRequest.fileContent);
+        return new KeyValuePair<string, Action<bool>>( tmpFilePath, (bool confirmed)=>HandleTempFile(tmpFilePath, FilePath, confirmed));
+    }
+
+    private Task HandleTempFile(string tempFilePath, string filepath, bool saveConfirmed)
+    {
+        if (saveConfirmed)
+        {
+            //delete file form filepatch if exist
+            //remove tmpprefx  from previous file
+        }
+        else
+        {
+            //delete tmpfile
+        }
+    }
+
+    private async Task SaveFileAsync(string filePath, FileInfo file, int MaxFileSize)
+    {
+        using (var stream = file.OpenReadStream(MaxFileSize))
+        {
+        
+            using (var fileStream = new FileStream(filePath, FileMode.Create))
+            {
+                await stream.CopyToAsync(fileStream);
+            }
+        
+            Console.WriteLine($"File {file.Name} uploaded successfully.");
+        }
     }
     
 }
