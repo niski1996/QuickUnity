@@ -26,6 +26,7 @@
 
     <ItemGroup>
       <Folder Include="Components\Trainer\" />
+      <Folder Include="Contracts\" />
     </ItemGroup>
 
     <ItemGroup>

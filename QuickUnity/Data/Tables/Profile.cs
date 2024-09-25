@@ -6,6 +6,6 @@ public class ProfileRow
     public Guid UserId {get;set;}
     public DateOnly JoinDate {get;set;}
     public string Name {get;set;}
-    public string AvatarPatch {get;set;}
+    public string LastName {get;set;}
     
 }
