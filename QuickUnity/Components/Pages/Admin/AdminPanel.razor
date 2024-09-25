@@ -1,0 +1,47 @@
+@page "/AdminPanel"
+@attribute [Route($"/{AppRoutes.Admin}")]
+@using QuickUnity.Common
+@using QuickUnity.Data
+@inject ApplicationDbContext context;
+
+<RadzenDataGrid AllowFiltering="true" AllowColumnResize="true" AllowAlternatingRows="false" FilterMode="FilterMode.Advanced" AllowSorting="true" PageSize="5" AllowPaging="true" PagerHorizontalAlign="HorizontalAlign.Left" ShowPagingSummary="true"
+                Data="@users" ColumnWidth="300px" LogicalFilterOperator="LogicalFilterOperator.Or" SelectionMode="DataGridSelectionMode.Single" >
+    <Columns>
+        <RadzenDataGridColumn Property="@nameof(UserDto.Id)" Filterable="false" Title="ID" Frozen="true" Width="80px" TextAlign="TextAlign.Center" />
+        <RadzenDataGridColumn Title="Photo" Frozen="true" Sortable="false" Filterable="false" Width="80px" TextAlign="TextAlign.Center" >
+            <Template Context="data">
+                <RadzenImage Path="@data.photoPath" class="rz-gravatar" AlternateText="@(data.Name + " " + data.LastName)" />
+            </Template>
+        </RadzenDataGridColumn>
+        <RadzenDataGridColumn Property="@nameof(UserDto.Name)" Title="First Name" Frozen="true" Width="160px" />
+        <RadzenDataGridColumn Property="@nameof(UserDto.LastName)" Title="Last Name" Width="160px"/>
+        <RadzenDataGridColumn Property="@nameof(UserDto.Usernme)" Title="Username" Width="200px" />
+        <RadzenDataGridColumn Property="@nameof(UserDto.JoinDate)" Title="User since" Width="120px" />
+        <RadzenDataGridColumn Property="@nameof(UserDto.email)" Title="Birth Date" Width="160px" />
+
+    </Columns>
+</RadzenDataGrid>
+
+@code {
+    private List<UserDto> users = new();
+
+    protected override Task OnInitializedAsync()
+    {
+        return base.OnInitializedAsync();
+    }
+
+    private class UserDto
+    {
+        
+        
+        public Guid Id { get; set; }
+        public string Name { get; set; }
+        public string photoPath { get; set; }
+        public string LastName { get; set; }
+        public string Usernme { get; set; }
+        public DateOnly JoinDate { get; set; }
+        public string email { get; set; }
+
+    }
+
+}

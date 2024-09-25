@@ -24,4 +24,16 @@
       </Content>
     </ItemGroup>
 
+    <ItemGroup>
+      <Folder Include="Components\Trainer\" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <_ContentIncludedByDefault Remove="Components\Admin\AdminPanel.razor" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <AdditionalFiles Include="Components\Pages\Admin\AdminPanel.razor" />
+    </ItemGroup>
+
 </Project>
