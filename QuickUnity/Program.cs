@@ -4,6 +4,7 @@ using Microsoft.EntityFrameworkCore;
 using QuickUnity.Components;
 using QuickUnity.Components.Account;
 using QuickUnity.Data;
+using QuickUnity.Services;
 using Radzen;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -16,6 +17,7 @@ builder.Services.AddCascadingAuthenticationState();
 builder.Services.AddScoped<IdentityUserAccessor>();
 builder.Services.AddScoped<IdentityRedirectManager>();
 builder.Services.AddScoped<AuthenticationStateProvider, IdentityRevalidatingAuthenticationStateProvider>();
+builder.Services.AddSingleton<MediaStorageService>();
 
 builder.Services.AddRadzenComponents();
 builder.Services.AddRadzenCookieThemeService(options =>
