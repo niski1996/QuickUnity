@@ -1,8 +1,11 @@
-@page "/AdminPanel"
 @attribute [Route($"/{AppRoutes.Admin}")]
+@attribute [Authorize(Roles = "Admin")]
+@using Microsoft.AspNetCore.Authorization
+@using Microsoft.AspNetCore.Identity
 @using QuickUnity.Common
 @using QuickUnity.Data
-@inject ApplicationDbContext context;
+@inject ApplicationDbContext Context;
+@inject IServiceScopeFactory ScopeFactory;
 
 <RadzenDataGrid AllowFiltering="true" AllowColumnResize="true" AllowAlternatingRows="false" FilterMode="FilterMode.Advanced" AllowSorting="true" PageSize="5" AllowPaging="true" PagerHorizontalAlign="HorizontalAlign.Left" ShowPagingSummary="true"
                 Data="@users" ColumnWidth="300px" LogicalFilterOperator="LogicalFilterOperator.Or" SelectionMode="DataGridSelectionMode.Single" >
@@ -17,7 +20,13 @@
         <RadzenDataGridColumn Property="@nameof(UserDto.LastName)" Title="Last Name" Width="160px"/>
         <RadzenDataGridColumn Property="@nameof(UserDto.Usernme)" Title="Username" Width="200px" />
         <RadzenDataGridColumn Property="@nameof(UserDto.JoinDate)" Title="User since" Width="120px" />
-        <RadzenDataGridColumn Property="@nameof(UserDto.email)" Title="Birth Date" Width="160px" />
+        <RadzenDataGridColumn Property="@nameof(UserDto.email)" Title="Email" Width="160px" />
+        <RadzenDataGridColumn Property="@nameof(UserDto.Role)" Title="Role" Width="160px" />
+        <RadzenDataGridColumn Title="Actions" Width="100px" Sortable="false" Filterable="false">
+            <Template Context="data">
+                <RadzenButton Text="Assign Role" Click="@(() => AssignRole(data.Id))" ButtonStyle="ButtonStyle.Primary" />
+            </Template>
+        </RadzenDataGridColumn>
 
     </Columns>
 </RadzenDataGrid>
@@ -27,21 +36,70 @@
 
     protected override Task OnInitializedAsync()
     {
+        FetchData();
         return base.OnInitializedAsync();
     }
 
-    private class UserDto
+    private void FetchData()
     {
         
+            var identityUsers = Context.Set<ApplicationUser>().ToList();
+            var roles = Context.Set<IdentityRole>().ToList();
+            var userRoles = Context.UserRoles.ToList(); // Assuming you have UserRoles set up
+
+            users = identityUsers.Select(user =>
+            {
+                var userRole = userRoles.FirstOrDefault(ur => ur.UserId == user.Id);
+                var roleName = userRole != null ? roles.FirstOrDefault(r => r.Id == userRole.RoleId)?.Name : "No Role";
+
+                return new UserDto(user, roleName);
+            }).ToList();
         
-        public Guid Id { get; set; }
+    }
+
+
+    private class UserDto
+    {
+        public UserDto(ApplicationUser user, string role)
+        {
+            Id = user.Id;
+            email = user.Email ?? "";
+            Usernme = user.UserName ?? "";
+            Role = role;
+        }
+
+        public string Id { get; set; }
         public string Name { get; set; }
         public string photoPath { get; set; }
         public string LastName { get; set; }
         public string Usernme { get; set; }
         public DateOnly JoinDate { get; set; }
         public string email { get; set; }
-
+        public string Role { get; set; }
     }
+    
+    private async Task AssignRole(string userId)
+    {
+        await using var scope = ScopeFactory.CreateAsyncScope();
+        var userManager = scope.ServiceProvider.GetRequiredService<UserManager<ApplicationUser>>();
+        // Logic to assign a role to the user
+        // You can show a dialog or a dropdown for role selection
+
+        // Example of role assignment logic
+        var user = await userManager.FindByIdAsync(userId); // Assuming you have userManager injected
+        if (user != null)
+        {
+            var role = "Trainer"; // Get the selected role from user input
+
+            if (!await userManager.IsInRoleAsync(user, role))
+            {
+                await userManager.AddToRoleAsync(user, role);
+            }
+
+            // Optionally refresh the data
+            FetchData();
+        }
+    }
+
 
 }

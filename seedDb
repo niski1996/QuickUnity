@@ -1,0 +1,5 @@
+INSERT INTO public."AspNetRoles" ("Id", "Name", "NormalizedName", "ConcurrencyStamp")
+VALUES
+  ('1a2b3c4d-5678-90ab-cdef-1234567890ab', 'user', 'USER', '1a2b3c4d-5678-90ab-cdef-1234567890ab'),
+  ('2b3c4d5e-6789-01ab-cdef-2345678901bc', 'admin', 'ADMIN', '2b3c4d5e-6789-01ab-cdef-2345678901bc'),
+  ('3c4d5e6f-7890-12ab-cdef-3456789012cd', 'trainer', 'TRAINER', '3c4d5e6f-7890-12ab-cdef-3456789012cd');

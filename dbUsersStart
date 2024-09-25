@@ -1,0 +1,31 @@
+truncate "AspNetRoleClaims" cascade;
+truncate "AspNetRoles" cascade;
+truncate "AspNetUserClaims" cascade;
+truncate "AspNetUserLogins" cascade;
+truncate "AspNetUserRoles" cascade;
+truncate "AspNetUserTokens" cascade;
+truncate "AspNetUsers" cascade;
+
+--Admin username `Admin1@admin.pl`, admin password `Admin1@admin.pl`  for all users password the same as username
+
+INSERT INTO public."AspNetUsers"(
+	"Id", "UserName", "NormalizedUserName", "Email", "NormalizedEmail", "EmailConfirmed", "PasswordHash", "SecurityStamp", "ConcurrencyStamp", "PhoneNumber", "PhoneNumberConfirmed", "TwoFactorEnabled", "LockoutEnd", "LockoutEnabled", "AccessFailedCount")
+VALUES 
+	('2fea1e04-ff5a-4283-aca7-94398b35f19f', 'Admin1@admin.pl', 'ADMIN1@ADMIN.PL', 'Admin1@admin.pl', 'ADMIN1@ADMIN.PL', true, 'AQAAAAIAAYagAAAAENDGMBjTMGNGqC0JhdyPtrazKJ7LK88w6y/mJNKaGGmzwKjh3StKytqG1hQY+171uQ==', '3LEMRDHCKEXXQFRBXSG2ZGTQ6IILXQLY', '82eaf896-8fa6-4470-8c74-840067a91358', NULL, false, false, NULL, true, 0),
+	('54758180-7c47-4ff5-afb6-b0f14c7dc659', 'Trainer1@admin.pl', 'TRAINER1@ADMIN.PL', 'Trainer1@admin.pl', 'TRAINER1@ADMIN.PL', true, 'AQAAAAIAAYagAAAAEBaplIEwqAzLyTaHofBObqK73Eea7nA7rgAdH8sBmtm8RXx1dFyxTmBhD8h5sW0X4A==', 'SFIAFRGF5LFZM7CUJUB7OOHSK3HVLUMH', '2a1ca9f5-2c17-4e31-8ecf-752d95914bed', NULL, false, false, NULL, true, 0),
+	('f1694581-70d6-4ec1-8540-910ffb90ed22', 'User1@admin.pl', 'USER1@ADMIN.PL', 'User1@admin.pl', 'USER1@ADMIN.PL', true, 'AQAAAAIAAYagAAAAEO160Utgf8wo3yq9lTf6j+GGLfBufBJiN9x26lrH26scDC5f6ssi7uEKoqX5D1Odeg==', 'VKDUAV4OHVQTR3HUR4YXHLXBUUPKLCE6', '5fbaaa3d-66c4-49c1-b131-25e6a5c30d63', NULL, false, false, NULL, true, 0),
+	('78105ff7-65a4-4a4f-8772-1dc6095f1e63', 'User2@admin.pl', 'USER2@ADMIN.PL', 'User2@admin.pl', 'USER2@ADMIN.PL', true, 'AQAAAAIAAYagAAAAEM3ulbnW76yOHTW/TFuXEOd0oOxiSR5lIrvrOcHwm8ofXNJ04uUGuzswmTHRBQOhCA==', '5IMAAUKBLBTAWZTYOWNQYUTDOB42EISW', '3de8213c-f991-4218-88e5-ef2d4a3c3ee4', NULL, false, false, NULL, true, 0),
+	('4bd0712b-77a7-445b-a314-7c9f730c309c', 'User3@admin.pl', 'USER3@ADMIN.PL', 'User3@admin.pl', 'USER3@ADMIN.PL', false, 'AQAAAAIAAYagAAAAECTqfArGvU6TzuZhrfDvy/GJlrqlWm3zzfgM03ewvjWUCqeYTuccgunJIY4QUoqtyQ==', '7OLE5RXMBE5ZPQFTWW2MJPNTS2WNSEPZ', '4001da24-5b5f-4d3d-b44f-191167127b8d', NULL, false, false, NULL, true, 0),
+	('d6f4f08e-e876-4c46-9961-31aeadf88803', 'User4@admin.pl', 'USER4@ADMIN.PL', 'User4@admin.pl', 'USER4@ADMIN.PL', true, 'AQAAAAIAAYagAAAAENOOYkbndmSo8DIE0h8YkQAKql/WLR1LdHErCaLm1vL1KHQWZ/31lW7hCwwq4bkr4A==', '6K6722QF4KAWZZLKK2XKUOG7P7PYSR22', '7e1d74f7-0c20-4556-98a2-23d68a5f9eb5', NULL, false, false, NULL, true, 0);
+
+
+INSERT INTO public."AspNetRoles" ("Id", "Name", "NormalizedName", "ConcurrencyStamp")
+VALUES
+  ('1a2b3c4d-5678-90ab-cdef-1234567890ab', 'User', 'USER', '1a2b3c4d-5678-90ab-cdef-1234567890ab'),
+  ('2b3c4d5e-6789-01ab-cdef-2345678901bc', 'Admin', 'ADMIN', '2b3c4d5e-6789-01ab-cdef-2345678901bc'),
+  ('3c4d5e6f-7890-12ab-cdef-3456789012cd', 'Trainer', 'TRAINER', '3c4d5e6f-7890-12ab-cdef-3456789012cd');
+
+  INSERT INTO public."AspNetUserRoles"(
+	"UserId", "RoleId")
+	VALUES ('2fea1e04-ff5a-4283-aca7-94398b35f19f', '2b3c4d5e-6789-01ab-cdef-2345678901bc');
+
