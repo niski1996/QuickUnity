@@ -1,11 +1,12 @@
 using QuickUnity.Entities.Enums;
+using FileInfo = Radzen.FileInfo;
 
 namespace QuickUnity.Entities;
 
 public class MediaSaveRequest
 {
-    public Guid Id { get; set; }
+    public string MediaId;
     public MultimediaType mediaType { get; set; }
-    public byte[] fileContent { get; set; }
-    public Guid OwnerId { get; set; }
+    public FileInfo fileContent { get; set; }
+    public string OwnerId { get; set; }
 }
