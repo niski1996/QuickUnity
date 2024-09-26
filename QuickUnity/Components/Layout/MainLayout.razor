@@ -13,6 +13,7 @@
 @inject DialogService DialogService
 @inject MediaStorageService MediaService
 
+<PageTitle>DrillRoad</PageTitle>
 <RadzenLayout>
     <RadzenComponents @rendermode="InteractiveServer"/>
     <RadzenHeader>
@@ -75,7 +76,7 @@
             <RadzenPanelMenuItem Text="Settings" Icon="dashboard"/>
         </RadzenPanelMenu>
     </RadzenSidebar>
-    <RadzenBody>
+    <RadzenBody Style="background-image: url('./backgrounds/bg.jpg'); background-size: cover; background-position: center; ">
         <div class="rz-p-4">
             @Body
         </div>
