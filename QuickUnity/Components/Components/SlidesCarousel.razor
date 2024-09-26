@@ -25,11 +25,10 @@
 
             _patch = SlidesPath[_actualCount%SlidesPath.Count];
             _actualCount++;
-            await Task.Delay(3000);
+            await Task.Delay(IntervalInSeconds*1000);
             InvokeAsync(StateHasChanged); // Odśwież interfejs użytkownika
         }
     }
-    
 
     public override Task SetParametersAsync(ParameterView parameters)
     {

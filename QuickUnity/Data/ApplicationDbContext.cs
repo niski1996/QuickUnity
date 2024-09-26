@@ -27,6 +27,7 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
             entity.Property(e => e.InsertDate).HasDefaultValueSql("NOW()").ValueGeneratedOnAdd();
 
         });
+        builder.Entity<TrainerRow>();
 
         base.OnModelCreating(builder);
     }

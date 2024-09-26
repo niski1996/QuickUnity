@@ -1,13 +1,18 @@
+@using Microsoft.EntityFrameworkCore
+@using QuickUnity.Data
+@using QuickUnity.Data.Tables
 @using QuickUnity.Entities
 @using QuickUnity.Entities.Enums
 @using QuickUnity.Services
 @inject MediaStorageService MediaService
 @inject DialogService DialogService
+@inject ApplicationDbContext Context;
+@inject IWebHostEnvironment Environment;
 
-<RadzenCard class="rz-my-12 rz-mx-auto" Style="max-width: 500px">
+<RadzenCard class="rz-my-12 rz-mx-auto" Style="width: 500px; height: 820px;">
     <RadzenStack Gap="1rem">
         <RadzenStack Orientation="Orientation.Vertical" AlignItems="AlignItems.Center">
-            <RadzenStack Visible="@(_tempPatch is not null)" JustifyContent="JustifyContent.Center" Gap="1rem">
+            <RadzenStack JustifyContent="JustifyContent.Center" Gap="1rem">
                 <SlidesCarousel SlidesPath="_paths" IntervalInSeconds="1"/>
                     <RadzenFormField Text="Title" Variant="Variant.Filled" Style="width: 100%;">
                         <RadzenTextBox Name="UserName" @bind-Value="@_video.Name" Style="width: 100%"/>
@@ -17,27 +22,25 @@
                 </RadzenFormField>
                 <RadzenStack Orien2tation="Orientation.Horizontal" JustifyContent="JustifyContent.SpaceEvenly">
                     <RadzenButton Size="ButtonSize.Large" ButtonStyle="ButtonStyle.Success" Click="@OnEdit">Edit</RadzenButton>
-                    <RadzenButton Size="ButtonSize.Large" ButtonStyle="ButtonStyle.Danger" Click="@OnDelete">Reject</RadzenButton>
+                    <RadzenButton Size="ButtonSize.Large" ButtonStyle="ButtonStyle.Danger" Click="@OnDelete">Delete</RadzenButton>
                 </RadzenStack>
             </RadzenStack>
         </RadzenStack>
-        <RadzenCard Variant="Variant.Outlined">
-            <RadzenText TextStyle="TextStyle.Subtitle2" TagName="TagName.H3">Upload your picture</RadzenText>
-            <RadzenUpload Multiple="true" Change="@OnClientChange" Style="width: 100%"
-                          InputAttributes="@(new Dictionary<string, object>() { { "aria-label", "select file" } })"/>
-        </RadzenCard>
     </RadzenStack>
 </RadzenCard>
 
 @code {
     
     [Parameter,EditorRequired]
-    public required string VideoFilePath { get; set; }
+    public required Tuple<string, string> VideoFilePathAndId { get; set; }
 
     protected override Task OnInitializedAsync()
     {
-        _slidePath = Path.Combine(Path.GetDirectoryName(VideoFilePath)??throw new ArgumentException("no video path"), "slides");
+        _slidePath = Path.Combine(Path.GetDirectoryName(VideoFilePathAndId.Item1)??throw new ArgumentException("no video path"), "slides");
         _paths = Enumerable.Range(0, MediaStorageService.SlidesAmount).Select(x => Path.Combine(_slidePath, $"{x}.png")).ToList();
+        _paths.Select(x => { Console.WriteLine(x);
+            return x;
+        });
         return base.OnInitializedAsync();
     }
 
@@ -45,20 +48,21 @@
     private List<string>? _paths;
 
     private VideoDto _video = new();
-    
-    private string? _tempPatch;
-    private Action<bool> _confirmAction;
 
     private void OnEdit()
     {
-        _confirmAction.Invoke(true);
-        DialogService.Close(true);
+        
         StateHasChanged();
     }
-    private void OnDelete()
+    private async Task OnDelete()
     {
-        _confirmAction.Invoke(false);
-        DialogService.Close(true);
+        
+            var video = await Context.Set<VideoRow>().FirstAsync(x => x.Id == VideoFilePathAndId.Item2);
+            Context.Set<VideoRow>().Remove(video);
+            await Context.SaveChangesAsync();
+            string basePath = Environment.WebRootPath;
+            string fullPath = Path.Combine(basePath, Path.GetDirectoryName(VideoFilePathAndId.Item1) ?? "");
+            Directory.Delete(fullPath, true);
     }
 
     async Task OnClientChange(UploadChangeEventArgs args)
@@ -76,9 +80,6 @@
                     FileContent = file
                 };
                 var tmp =await MediaService.SaveFileAsync(request);
-                _tempPatch = tmp.Key;
-                Console.WriteLine(_tempPatch);
-                _confirmAction = tmp.Value;
                 StateHasChanged();
                 
             }

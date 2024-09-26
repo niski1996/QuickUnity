@@ -1,30 +1,48 @@
-@page "/MyVideos"
+@attribute [Route($"/{AppRoutes.MyVideo}")]
+@attribute [Authorize]
+@using Microsoft.AspNetCore.Authorization
 @using Microsoft.EntityFrameworkCore
+@using QuickUnity.Common
 @using QuickUnity.Data
-@using QuickUnity.Data.Tables
+@using QuickUnity.Components.Components
+@using QuickUnity.Components.Modals
 @inject ApplicationDbContext DbContext;
+@inject AuthenticationStateProvider AuthenticationStateProvider
+@inject DialogService DialogService
+
 <AuthorizeView>
     <RadzenStack Orientation="Orientation.Horizontal" Wrap="FlexWrap.Wrap" AlignItems="AlignItems.Center" JustifyContent="JustifyContent.Left">
-        @({
-    _paths  = (await DbContext.Set<ApplicationUser>()
-                .Include(x => x.Profile)
-                .ThenInclude(x => x.Videos)
-                .FirstAsync(x => x.UserName == context.User.Identity.Name)).Profile.Videos.ToList()
-
-
-
+        @foreach (var path in _paths)
+        {
+            <VideoCard VideoFilePathAndId="@path"/>
         }
-        )
     </RadzenStack>
-    Hello @context.User.Identity?.Name!
+    <RadzenButton Variant="Variant.Text" Click="@(()=>ShowAvatarModal(context.User.Identity?.Name??""))">AAAAA! kliknij mnie</RadzenButton>
 </AuthorizeView>
 
 @code {
-    List<string> _paths = [];
-    protected override Task OnInitializedAsync()
+    List<Tuple<string, string>> _paths = [];
+    protected override async Task OnInitializedAsync()
     {
+        var username = (await AuthenticationStateProvider.GetAuthenticationStateAsync()).User.Identity?.Name ?? throw new Exception("smth wrong with user");
+        _paths = (await DbContext.Set<ApplicationUser>()
+            .Include(x => x.Profile)
+                .ThenInclude(x => x.Videos)
+            .FirstAsync(x => x.UserName == username)).Profile.Videos
+                .Select(x => new Tuple<string, string>(x.Path,x.Id)).ToList();
 
-        return base.OnInitializedAsync();
+        base.OnInitializedAsync();
+    }
+
+    private async Task ShowAvatarModal(string Username)
+    {
+        await DialogService.OpenAsync<VideoLoaderModal>($"Add new video",
+            new Dictionary<string, object>() { { "Username", Username} },
+            new DialogOptions() 
+            {
+                Resizable = true, 
+                Draggable = true,
+            });
     }
 
 }
