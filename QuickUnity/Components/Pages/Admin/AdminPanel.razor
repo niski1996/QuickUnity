@@ -4,11 +4,13 @@
 @using Microsoft.AspNetCore.Identity
 @using Microsoft.EntityFrameworkCore
 @using QuickUnity.Common
+@using QuickUnity.Components.Modals
 @using QuickUnity.Data
 @using QuickUnity.Services
 @inject ApplicationDbContext Context;
 @inject IServiceScopeFactory ScopeFactory;
 @inject MediaStorageService MediaService
+@inject DialogService DialogService
 
 <RadzenDataGrid AllowFiltering="true" AllowColumnResize="true" AllowAlternatingRows="false" FilterMode="FilterMode.Advanced" AllowSorting="true" PageSize="20" AllowPaging="true" PagerHorizontalAlign="HorizontalAlign.Left" ShowPagingSummary="true"
                 Data="@users" ColumnWidth="300px" LogicalFilterOperator="LogicalFilterOperator.Or" SelectionMode="DataGridSelectionMode.Single" >
@@ -16,15 +18,16 @@
         <RadzenDataGridColumn Property="@nameof(UserDto.Id)" Filterable="false" Title="ID" Frozen="true" Width="80px" TextAlign="TextAlign.Center" />
         <RadzenDataGridColumn Title="Photo" Frozen="true" Sortable="false" Filterable="false" Width="80px" TextAlign="TextAlign.Center" >
             <Template Context="data">
+                <RadzenButton Variant="Variant.Text" Click="@(()=>ShowAvatarModal(data.Username))">
                 @if (File.Exists(MediaService.GetAvatarPatch(data.Username)))
                 {
-                <RadzenImage Style="width: 32px; height: 32px; border-radius: 50%;" Path="@MediaService.GetAvatarRelativePatch(data.Username)"></RadzenImage>
+                    <RadzenImage Style="width: 40px; height: 40px; border-radius: 50%;" Path="@MediaService.GetAvatarRelativePatch(data.Username)"></RadzenImage>
                 }
                 else
                 {
-                <RadzenGravatar Email=@(data.Username)/>
+                    <RadzenGravatar Email=@(data.Username)/>
                 }
-                <RadzenImage Path="@data.photoPath" class="rz-gravatar" AlternateText="@(data.Name + " " + data.LastName)"/>
+                </RadzenButton>
             </Template>
         </RadzenDataGridColumn>
         <RadzenDataGridColumn Property="@nameof(UserDto.Name)" Title="First Name" Frozen="true" Width="160px" />
@@ -59,6 +62,17 @@
     {
         FetchData();
         return base.OnInitializedAsync();
+    }
+    
+    public async Task ShowAvatarModal(string userId)
+    {
+        await DialogService.OpenAsync<AvatarLoaderModal>($"Avatar choose",
+            new Dictionary<string, object>() { { "UserId", userId } },
+            new DialogOptions() 
+            {
+                Resizable = true, 
+                Draggable = true,
+            });
     }
 
     private void FetchData()
@@ -126,7 +140,6 @@
 
         public string Id { get; set; }
         public string Name { get; set; }
-        public string photoPath { get; set; }
         public string LastName { get; set; }
         public string Username { get; set; }
         public DateOnly JoinDate { get; set; }
