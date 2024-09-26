@@ -1,13 +1,43 @@
 ﻿@page "/auth"
-
 @using Microsoft.AspNetCore.Authorization
-
+@using QuickUnity.Common
+@inject NavigationManager NavigationManager
 @attribute [Authorize]
 
-<PageTitle>Auth</PageTitle>
+<PageTitle>Authentication</PageTitle>
 
-<h1>You are authenticated</h1>
+<RadzenCard Style="max-width: 600px; margin: auto; padding: 20px;">
+    <RadzenHeading Level="1">Welcome!</RadzenHeading>
 
-<AuthorizeView>
-    Hello @context.User.Identity?.Name!
-</AuthorizeView>
+    <AuthorizeView>
+        <p>
+            Hello <strong>@context.User.Identity?.Name!</strong>! You are successfully authenticated.
+        </p>
+        <RadzenTextBox Placeholder="Type your note here..." Style="width: 100%;" />
+        
+        <p style="margin-top: 15px;">
+            <strong>Note:</strong> We are glad to have you on board! Feel free to explore our features and reach out if you need assistance.
+        </p>
+
+        <p>
+            <RadzenButton Text="Go to videos" ButtonStyle="ButtonStyle.Primary" Click="NavigateToDashboard" />
+        </p>
+    </AuthorizeView>
+
+    <NotAuthorized>
+        <p>You are not authorized to view this page. Please log in.</p>
+        <RadzenButton Text="Login" ButtonStyle="ButtonStyle.Secondary" Click="NavigateToLogin" />
+    </NotAuthorized>
+</RadzenCard>
+
+@code {
+    private void NavigateToDashboard()
+    {
+        NavigationManager.NavigateTo(AppRoutes.MyVideo);
+    }
+
+    private void NavigateToLogin()
+    {
+        NavigationManager.NavigateTo("/login");
+    }
+}
