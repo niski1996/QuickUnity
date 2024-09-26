@@ -54,7 +54,7 @@
                                 <div class="nav-item px-3">
                                     <form action="Account/Logout" method="post">
                                         <AntiforgeryToken/>
-                                        <input type="hidden" name="ReturnUrl" value="@currentUrl"/>
+                                        <input type="hidden" name="ReturnUrl" value="@_currentUrl"/>
                                         <RadzenButton ButtonType="ButtonType.Submit" Variant="Variant.Text" Style="width: 100%">Logout</RadzenButton>
                                     </form>
                                 </div>
@@ -70,7 +70,7 @@
             <RadzenPanelMenuItem Text="Home" Icon="home" Path=""/>
             <RadzenPanelMenuItem Text="Trainers" Icon="self_improvement" Path="@AppRoutes.Trainers"/>
             <RadzenPanelMenuItem Text="Admin" Icon="admin_panel_settings" Path="@AppRoutes.Admin"/>
-            <RadzenPanelMenuItem Text="Techniques" Icon="sports_kabaddi" Path="@AppRoutes.Techniques">
+            <RadzenPanelMenuItem Text="My Video" Icon="sports_kabaddi" Path="@AppRoutes.MyVideo">
             </RadzenPanelMenuItem>
             <RadzenPanelMenuItem Text="Settings" Icon="dashboard"/>
         </RadzenPanelMenu>
@@ -87,17 +87,17 @@
 
 @code{
     private bool _sidebarExpanded = true;
-    private string? currentUrl;
+    private string? _currentUrl;
     
     private void OnLocationChanged(object? sender, LocationChangedEventArgs e)
     {
-        currentUrl = Nav.ToBaseRelativePath(e.Location);
+        _currentUrl = Nav.ToBaseRelativePath(e.Location);
         StateHasChanged();
     }
     
     protected override void OnInitialized()
     {
-        currentUrl = Nav.ToBaseRelativePath(Nav.Uri);
+        _currentUrl = Nav.ToBaseRelativePath(Nav.Uri);
         Nav.LocationChanged += OnLocationChanged;
     }
     

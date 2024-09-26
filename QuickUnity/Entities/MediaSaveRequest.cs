@@ -6,7 +6,7 @@ namespace QuickUnity.Entities;
 public class MediaSaveRequest
 {
     public string MediaId;
-    public MultimediaType mediaType { get; set; }
-    public FileInfo fileContent { get; set; }
+    public MultimediaType MediaType { get; set; }
+    public FileInfo FileContent { get; set; }
     public string OwnerId { get; set; }
 }

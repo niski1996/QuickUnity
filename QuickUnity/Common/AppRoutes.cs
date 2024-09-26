@@ -7,6 +7,7 @@ public static class AppRoutes
     public const string Settings = "Settings";
     public const string ForgotPassword = "ForgotPassword";
     public const string Techniques = "Techniques";
+    public const string MyVideo = "MyVideo";
     public const string Trainers = "Trainers";
     public const string TechniquesAdd = $"{Techniques}/Add";
     public const string Logout = "Logout";

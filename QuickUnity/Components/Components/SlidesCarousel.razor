@@ -1,0 +1,45 @@
+@inherits ComponentBase
+
+<RadzenImage Path="@_patch" class="rz-mx-auto rz-my-12"/>
+
+@code {
+    private string _patch; 
+    private int _actualCount = 0;
+
+    
+    [Parameter,EditorRequired] public required List<string> SlidesPath { get; set; }
+    [Parameter] public int IntervalInSeconds { get; set; } = 1;
+
+    private bool _isComponentActive = true;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await base.OnInitializedAsync();
+        _ = ChangePictureAsync();
+    }
+
+    private async Task ChangePictureAsync()
+    {
+        while (_isComponentActive)
+        {
+
+            _patch = SlidesPath[_actualCount%SlidesPath.Count];
+            _actualCount++;
+            await Task.Delay(3000);
+            InvokeAsync(StateHasChanged); // Odśwież interfejs użytkownika
+        }
+    }
+    
+
+    public override Task SetParametersAsync(ParameterView parameters)
+    {
+        base.SetParametersAsync(parameters);
+        _isComponentActive = true; // Upewnij się, że komponent działa przy zmianie parametrów
+        return Task.CompletedTask;
+    }
+
+    public void Dispose()
+    {
+        _isComponentActive = false; // Zatrzymujemy pętlę, gdy komponent zostanie usunięty
+    }
+}

@@ -29,7 +29,7 @@
     </ItemGroup>
 
     <ItemGroup>
-      <Folder Include="Components\Trainer\" />
+      <Folder Include="Components\Pages\Trainer\" />
       <Folder Include="Contracts\" />
     </ItemGroup>
 

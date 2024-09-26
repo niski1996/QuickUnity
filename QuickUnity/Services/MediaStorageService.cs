@@ -43,14 +43,14 @@ public class MediaStorageService
     private string GetTempVideoPatch(string userId, string videoId) => Path.Combine(_uploadPath, userId, "video",
         $"{videoId}", $"{TmpPrefix}{videoId}.mp4");
 
-    public string GetVideoPatch(string userId, string videoId) =>
+    private string GetVideoPatch(string userId, string videoId) =>
         Path.Combine(_uploadPath, userId, "video", $"{videoId}", $"{videoId}.mp4");
 
     #endregion
 
 
     private const string TmpPrefix = "_tmp_";
-    private const int slidesAmount = 10;
+    public const int SlidesAmount = 10;
     private const int MaxAvatarSize = 10 * 1024 * 1024; // Max file size of 10 MB
     private const int MaxVideoSize = 500 * 1024 * 1024; // Max file size of 500 MB
     private static readonly List<string> AcceptedImageExtensions = [".png", ".jpg", ".jpeg"];
@@ -82,23 +82,23 @@ public class MediaStorageService
     public async Task<KeyValuePair<string, Action<bool>>> SaveFileAsync(MediaSaveRequest mediaSaveRequest)
     {
         InitializeUserStorage(mediaSaveRequest.OwnerId);
-        return mediaSaveRequest.mediaType switch
+        return mediaSaveRequest.MediaType switch
         {
             MultimediaType.Image => await PostponedSaveImageWithPreviewAsync(mediaSaveRequest),
             MultimediaType.Video => await PostponedSaveVideoWithPreviewAsync(mediaSaveRequest),
-            _ => throw new Exception($"Unknown media type: {mediaSaveRequest.mediaType}")
+            _ => throw new Exception($"Unknown media type: {mediaSaveRequest.MediaType}")
         };
     }
 
     private async Task<KeyValuePair<string, Action<bool>>> PostponedSaveVideoWithPreviewAsync(
         MediaSaveRequest mediaSaveRequest)
     {
-        if (!IsValidImageFormat(mediaSaveRequest.fileContent.Name, AcceptedVideoExtensions))
+        if (!IsValidImageFormat(mediaSaveRequest.FileContent.Name, AcceptedVideoExtensions))
             throw new Exception("Invalid video format.");
         var userId = mediaSaveRequest.OwnerId;
         var videoId = mediaSaveRequest.MediaId;
         Directory.CreateDirectory(Path.Combine(_uploadPath, userId, "video", videoId));
-        await SaveFileAsync(GetTempVideoPatch(userId, videoId), mediaSaveRequest.fileContent, MaxVideoSize);
+        await SaveFileAsync(GetTempVideoPatch(userId, videoId), mediaSaveRequest.FileContent, MaxVideoSize);
 
         return new KeyValuePair<string, Action<bool>>(GetTempVideoRelativePatch(userId, videoId), confirmed
             => HandleTempVideo(GetTempVideoPatch(userId, videoId), GetVideoPatch(userId, videoId), confirmed));
@@ -107,17 +107,17 @@ public class MediaStorageService
     private async Task<KeyValuePair<string, Action<bool>>> PostponedSaveImageWithPreviewAsync(
         MediaSaveRequest mediaSaveRequest)
     {
-        if (!IsValidImageFormat(mediaSaveRequest.fileContent.Name, AcceptedImageExtensions))
+        if (!IsValidImageFormat(mediaSaveRequest.FileContent.Name, AcceptedImageExtensions))
             throw new Exception("Invalid image format.");
         var userId = mediaSaveRequest.OwnerId;
-        await SaveFileAsync(GetTempAvatarPatch(userId), mediaSaveRequest.fileContent, MaxAvatarSize);
+        await SaveFileAsync(GetTempAvatarPatch(userId), mediaSaveRequest.FileContent, MaxAvatarSize);
 
         await ResizeImageAsync(GetTempAvatarPatch(userId), 400, 400);
         return new KeyValuePair<string, Action<bool>>(GetTempAvatarRelativePatch(userId), confirmed
             => HandleTempAvatars(GetTempAvatarPatch(userId), GetAvatarPatch(userId), confirmed));
     }
 
-    private async Task ResizeImageAsync(string inputFilePath, int width, int height)
+    private static async Task ResizeImageAsync(string inputFilePath, int width, int height)
     {
         using var image = await Image.LoadAsync(inputFilePath);
 
@@ -164,7 +164,7 @@ public class MediaStorageService
             if (File.Exists(filePath))
                 File.Delete(filePath);
             File.Move(tempFilePath, filePath);
-            await GenerateSlides(filePath, 10);
+            await GenerateSlides(filePath, SlidesAmount);
         }
         else
             Directory.Delete(
@@ -206,6 +206,7 @@ public class MediaStorageService
                     Path.Combine(slidesPath, $"{i}.png"); 
                 await videoProcessor.ExtractFrame(filePath, outputThumbnailPath,
                     (int)(i * interval)); // Extract at equal intervals
+                await ResizeImageAsync(outputThumbnailPath, 480, 270);
                 Console.WriteLine($"Thumbnail saved at: {outputThumbnailPath}");
             }
         }

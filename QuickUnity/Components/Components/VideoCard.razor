@@ -1,33 +1,24 @@
-@page "/vid"
-@using System.Linq.Dynamic.Core
-@using Microsoft.EntityFrameworkCore
-@using QuickUnity.Data
-@using QuickUnity.Data.Tables
 @using QuickUnity.Entities
 @using QuickUnity.Entities.Enums
 @using QuickUnity.Services
 @inject MediaStorageService MediaService
 @inject DialogService DialogService
-@inject ApplicationDbContext Context;
 
 <RadzenCard class="rz-my-12 rz-mx-auto" Style="max-width: 500px">
     <RadzenStack Gap="1rem">
         <RadzenStack Orientation="Orientation.Vertical" AlignItems="AlignItems.Center">
             <RadzenStack Visible="@(_tempPatch is not null)" JustifyContent="JustifyContent.Center" Gap="1rem">
-                <video controls width="480" style="border-radius: 30px;">
-                    <source src="@_tempPatch" type="video/mp4" />
-                </video>
-                <RadzenStack Orientation="Orientation.Horizontal" JustifyContent="JustifyContent.SpaceEvenly">
-                    <RadzenButton Size="ButtonSize.Large" ButtonStyle="ButtonStyle.Success" Click="@OnAccept">Accept</RadzenButton>
-                    <RadzenButton Size="ButtonSize.Large" ButtonStyle="ButtonStyle.Danger" Click="@OnReject">Reject</RadzenButton>
-                </RadzenStack>
-                <RadzenFormField Text="Title" Variant="Variant.Filled" Style="width: 100%;">
-                    <RadzenTextBox Name="UserName" @bind-Value="@_video.Name" Style="width: 100%"/>
-                </RadzenFormField>
+                <SlidesCarousel SlidesPath="_paths" IntervalInSeconds="1"/>
+                    <RadzenFormField Text="Title" Variant="Variant.Filled" Style="width: 100%;">
+                        <RadzenTextBox Name="UserName" @bind-Value="@_video.Name" Style="width: 100%"/>
+                    </RadzenFormField>
                 <RadzenFormField Text="Description" Variant="Variant.Filled" Style="width: 100%;">
                     <RadzenTextArea Name="Description" Rows="6" @bind-Value="@_video.Description" Style="width: 100%"/>
                 </RadzenFormField>
-
+                <RadzenStack Orien2tation="Orientation.Horizontal" JustifyContent="JustifyContent.SpaceEvenly">
+                    <RadzenButton Size="ButtonSize.Large" ButtonStyle="ButtonStyle.Success" Click="@OnEdit">Edit</RadzenButton>
+                    <RadzenButton Size="ButtonSize.Large" ButtonStyle="ButtonStyle.Danger" Click="@OnDelete">Reject</RadzenButton>
+                </RadzenStack>
             </RadzenStack>
         </RadzenStack>
         <RadzenCard Variant="Variant.Outlined">
@@ -40,35 +31,31 @@
 
 @code {
     
-    [Parameter,EditorRequired] 
-    public required string Username { get; set; }
+    [Parameter,EditorRequired]
+    public required string VideoFilePath { get; set; }
+
+    protected override Task OnInitializedAsync()
+    {
+        _slidePath = Path.Combine(Path.GetDirectoryName(VideoFilePath)??throw new ArgumentException("no video path"), "slides");
+        _paths = Enumerable.Range(0, MediaStorageService.SlidesAmount).Select(x => Path.Combine(_slidePath, $"{x}.png")).ToList();
+        return base.OnInitializedAsync();
+    }
+
+    private string _slidePath;
+    private List<string>? _paths;
 
     private VideoDto _video = new();
-    private string _videoId = Guid.NewGuid().ToString();
     
     private string? _tempPatch;
     private Action<bool> _confirmAction;
 
-    private async Task OnAccept()
+    private void OnEdit()
     {
         _confirmAction.Invoke(true);
         DialogService.Close(true);
-        var profile = await Context.Set<ProfileRow>()
-            .Include(x => x.ApplicationUser)
-            .FirstAsync(x => x.ApplicationUser.UserName == Username);
-        var video = new VideoRow
-        {
-            Name = _video.Name,
-            Description = _video.Description,
-            Id = _videoId,
-            Path = MediaService.GetVideoRelativePatch(Username, _videoId),
-            ProfileRow = profile
-        };
-        await Context.AddAsync(video);
-        await Context.SaveChangesAsync();
         StateHasChanged();
     }
-    private void OnReject()
+    private void OnDelete()
     {
         _confirmAction.Invoke(false);
         DialogService.Close(true);
@@ -82,9 +69,10 @@
             {
                 var request = new MediaSaveRequest
                 {
-                    MediaId = _videoId ,
+                    MediaId = Guid.NewGuid().ToString(),
                     MediaType = MultimediaType.Video,
-                    OwnerId = Username,
+                    OwnerId = "dummy",
+                    // OwnerId = UserId,
                     FileContent = file
                 };
                 var tmp =await MediaService.SaveFileAsync(request);

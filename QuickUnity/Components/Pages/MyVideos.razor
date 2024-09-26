@@ -1,0 +1,30 @@
+@page "/MyVideos"
+@using Microsoft.EntityFrameworkCore
+@using QuickUnity.Data
+@using QuickUnity.Data.Tables
+@inject ApplicationDbContext DbContext;
+<AuthorizeView>
+    <RadzenStack Orientation="Orientation.Horizontal" Wrap="FlexWrap.Wrap" AlignItems="AlignItems.Center" JustifyContent="JustifyContent.Left">
+        @({
+    _paths  = (await DbContext.Set<ApplicationUser>()
+                .Include(x => x.Profile)
+                .ThenInclude(x => x.Videos)
+                .FirstAsync(x => x.UserName == context.User.Identity.Name)).Profile.Videos.ToList()
+
+
+
+        }
+        )
+    </RadzenStack>
+    Hello @context.User.Identity?.Name!
+</AuthorizeView>
+
+@code {
+    List<string> _paths = [];
+    protected override Task OnInitializedAsync()
+    {
+
+        return base.OnInitializedAsync();
+    }
+
+}

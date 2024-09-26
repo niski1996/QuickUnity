@@ -13,7 +13,7 @@
 @inject DialogService DialogService
 
 <RadzenDataGrid AllowFiltering="true" AllowColumnResize="true" AllowAlternatingRows="false" FilterMode="FilterMode.Advanced" AllowSorting="true" PageSize="20" AllowPaging="true" PagerHorizontalAlign="HorizontalAlign.Left" ShowPagingSummary="true"
-                Data="@users" ColumnWidth="300px" LogicalFilterOperator="LogicalFilterOperator.Or" SelectionMode="DataGridSelectionMode.Single" >
+                Data="@_users" ColumnWidth="300px" LogicalFilterOperator="LogicalFilterOperator.Or" SelectionMode="DataGridSelectionMode.Single" >
     <Columns>
         <RadzenDataGridColumn Property="@nameof(UserDto.Id)" Filterable="false" Title="ID" Frozen="true" Width="80px" TextAlign="TextAlign.Center" />
         <RadzenDataGridColumn Title="Photo" Frozen="true" Sortable="false" Filterable="false" Width="80px" TextAlign="TextAlign.Center" >
@@ -33,9 +33,9 @@
             <Template Context="data">
                 <RadzenSplitButton Click="@(args => AssignRole(data.Id, args.Value))" Text="@data.Role">
                     <ChildContent>
-                        <RadzenSplitButtonItem Text="User" Value="@predefinedRoles.User.ToString()" />
-                        <RadzenSplitButtonItem Text="Trainer" Value="@predefinedRoles.Trainer.ToString()" />
-                        <RadzenSplitButtonItem Text="Admin" Value="@predefinedRoles.Admin.ToString()" />
+                        <RadzenSplitButtonItem Text="User" Value="@PredefinedRoles.User.ToString()" />
+                        <RadzenSplitButtonItem Text="Trainer" Value="@PredefinedRoles.Trainer.ToString()" />
+                        <RadzenSplitButtonItem Text="Admin" Value="@PredefinedRoles.Admin.ToString()" />
                     </ChildContent>
                 </RadzenSplitButton>
             </Template>
@@ -50,7 +50,7 @@
 </RadzenDataGrid>
 
 @code {
-    private List<UserDto> users = new();
+    private List<UserDto> _users = new();
 
     protected override Task OnInitializedAsync()
     {
@@ -76,7 +76,7 @@
             var roles = Context.Set<IdentityRole>().ToList();
             var userRoles = Context.UserRoles.ToList(); // Assuming you have UserRoles set up
 
-            users = identityUsers.Select(user =>
+            _users = identityUsers.Select(user =>
             {
                 var userRole = userRoles.FirstOrDefault(ur => ur.UserId == user.Id);
                 var roleName = userRole != null ? roles.FirstOrDefault(r => r.Id == userRole.RoleId)?.Name : "No Role";
@@ -142,7 +142,7 @@
         public string Role { get; set; }
     }
 
-    private enum predefinedRoles
+    private enum PredefinedRoles
     {
         User,
         Trainer,

@@ -14,4 +14,5 @@ public class ProfileRow
     public string LastName { get; set; } = "";
     public string ApplicationUserId { get; set; }
     public virtual ApplicationUser ApplicationUser { get; set; } = null!;
+    public ICollection<VideoRow> Videos { get; set; } = new List<VideoRow>();
 }

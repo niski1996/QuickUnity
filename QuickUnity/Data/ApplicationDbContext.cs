@@ -16,11 +16,16 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
         builder.Entity<ProfileRow>(entity =>
         {
             entity.HasKey(e => e.Id);
-            // entity.Property(e => e.ApplicationUser).IsRequired();
             entity.Property(e => e.Name).IsRequired().HasMaxLength(100);
             entity.Property(e => e.LastName).IsRequired().HasMaxLength(100);
             entity.Property(e => e.JoinDate).HasDefaultValueSql("NOW()").ValueGeneratedOnAdd();
-            // entity.HasOne(e=>e.ApplicationUser).WithOne(e=>e.Profile).OnDelete(DeleteBehavior.Cascade);
+        });
+        builder.Entity<VideoRow>(entity =>
+        {
+            entity.Property(e => e.Name).IsRequired().HasMaxLength(100);
+            entity.Property(e => e.Id).IsRequired().ValueGeneratedOnAdd();
+            entity.Property(e => e.InsertDate).HasDefaultValueSql("NOW()").ValueGeneratedOnAdd();
+
         });
 
         base.OnModelCreating(builder);

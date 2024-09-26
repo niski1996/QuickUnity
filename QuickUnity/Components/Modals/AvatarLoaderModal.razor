@@ -7,11 +7,11 @@
 <RadzenCard class="rz-my-12 rz-mx-auto" Style="max-width: 420px">
     <RadzenStack Gap="1rem">
         <RadzenStack Orientation="Orientation.Vertical" AlignItems="AlignItems.Center">
-            <RadzenStack Visible="@(MediaService.AvatarAvailable(UserId) && tempPatch is null)">
+            <RadzenStack Visible="@(MediaService.AvatarAvailable(UserId) && _tempPatch is null)">
                 <RadzenImage Path="@MediaService.GetAvatarRelativePatch(UserId)" Style="width: 400px; height: 400px; border-radius: 10%;"/>
             </RadzenStack>
-            <RadzenStack Visible="@(tempPatch is not null)" JustifyContent="JustifyContent.Center" Gap="1rem">
-                <RadzenImage Path="@tempPatch" Style="width: 400px; height: 400px; border-radius: 10%;"/>
+            <RadzenStack Visible="@(_tempPatch is not null)" JustifyContent="JustifyContent.Center" Gap="1rem">
+                <RadzenImage Path="@_tempPatch" Style="width: 400px; height: 400px; border-radius: 10%;"/>
                 <RadzenStack Orientation="Orientation.Horizontal" JustifyContent="JustifyContent.SpaceEvenly">
                     <RadzenButton Size="ButtonSize.Large" ButtonStyle="ButtonStyle.Success" Click="@OnAccept">Accept</RadzenButton>
                     <RadzenButton Size="ButtonSize.Large" ButtonStyle="ButtonStyle.Danger" Click="@OnReject">Reject</RadzenButton>
@@ -32,18 +32,18 @@
     public required string UserId { get; set; }
     
     private const long MaxFileSize = 10 * 1024 * 1024;
-    private string? tempPatch;
-    private Action<bool> confirmAction;
+    private string? _tempPatch;
+    private Action<bool> _confirmAction;
 
     private void OnAccept()
     {
-        confirmAction.Invoke(true);
+        _confirmAction.Invoke(true);
         DialogService.Close(true);
         StateHasChanged();
     }
     private void OnReject()
     {
-        confirmAction.Invoke(false);
+        _confirmAction.Invoke(false);
         DialogService.Close(true);
     }
 
@@ -59,14 +59,14 @@
                 var request = new MediaSaveRequest
                 {
                     MediaId = "avatar",
-                    mediaType = MultimediaType.Image,
+                    MediaType = MultimediaType.Image,
                     OwnerId = UserId,
-                    fileContent = file
+                    FileContent = file
                 };
                 var tmp =await MediaService.SaveFileAsync(request);
-                tempPatch = tmp.Key;
-                Console.WriteLine(tempPatch);
-                confirmAction = tmp.Value;
+                _tempPatch = tmp.Key;
+                Console.WriteLine(_tempPatch);
+                _confirmAction = tmp.Value;
                 StateHasChanged();
                 
             }
