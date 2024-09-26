@@ -32,6 +32,8 @@
 
     <ItemGroup>
       <_ContentIncludedByDefault Remove="Components\Admin\AdminPanel.razor" />
+      <_ContentIncludedByDefault Remove="wwwroot\Storage\dummy\image\_tmp_avatar.png" />
+      <_ContentIncludedByDefault Remove="wwwroot\Storage\User2@admin.pl\image\avatar.png" />
     </ItemGroup>
 
     <ItemGroup>

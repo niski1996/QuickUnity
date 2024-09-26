@@ -29,20 +29,11 @@
                 }
                 <RadzenProfileMenu>
                     <Template>
-
                         <AuthorizeView>
-                                
-                            @if (File.Exists(MediaService.GetAvatarPatch(context.User.Identity?.Name ?? "")))
-                            {
-                                <RadzenImage Style="width: 32px; height: 32px; border-radius: 50%;" Path="@MediaService.GetAvatarRelativePatch(context.User.Identity?.Name ?? "")"></RadzenImage>
-                            }
-                            else
-                            {
-                                <RadzenGravatar Email=@(context.User.Identity?.Name ?? "dummy")/>
-                            }
-                            </AuthorizeView>
+                            <RadzenImage Visible="@(MediaService.AvatarAvailable(context.User.Identity?.Name ?? ""))" Style="width: 32px; height: 32px; border-radius: 50%;" Path="@MediaService.GetAvatarRelativePatch(context.User.Identity?.Name ?? "")"></RadzenImage>
+                            <RadzenGravatar Visible="@(!MediaService.AvatarAvailable(context.User.Identity?.Name ?? ""))"  Email=@(context.User.Identity?.Name ?? "dummy")/>
+                        </AuthorizeView>
                     </Template>
-                    
                     <ChildContent>
                         <AuthorizeView>
                             <Authorized>

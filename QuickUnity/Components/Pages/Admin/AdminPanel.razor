@@ -19,14 +19,8 @@
         <RadzenDataGridColumn Title="Photo" Frozen="true" Sortable="false" Filterable="false" Width="80px" TextAlign="TextAlign.Center" >
             <Template Context="data">
                 <RadzenButton Variant="Variant.Text" Click="@(()=>ShowAvatarModal(data.Username))">
-                @if (File.Exists(MediaService.GetAvatarPatch(data.Username)))
-                {
-                    <RadzenImage Style="width: 40px; height: 40px; border-radius: 50%;" Path="@MediaService.GetAvatarRelativePatch(data.Username)"></RadzenImage>
-                }
-                else
-                {
-                    <RadzenGravatar Email=@(data.Username)/>
-                }
+                    <RadzenImage Visible="MediaService.AvatarAvailable(data.Username)" Style="width: 40px; height: 40px; border-radius: 50%;" Path="@MediaService.GetAvatarRelativePatch(data.Username)"></RadzenImage>
+                    <RadzenGravatar Visible="@(!MediaService.AvatarAvailable(data.Username))" Email=@(data.Username)/>
                 </RadzenButton>
             </Template>
         </RadzenDataGridColumn>
