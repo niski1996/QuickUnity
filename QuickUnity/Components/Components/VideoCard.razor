@@ -2,97 +2,89 @@
 @using QuickUnity.Data
 @using QuickUnity.Data.Tables
 @using QuickUnity.Entities
-@using QuickUnity.Entities.Enums
 @using QuickUnity.Services
 @inject MediaStorageService MediaService
 @inject DialogService DialogService
 @inject ApplicationDbContext Context;
 @inject IWebHostEnvironment Environment;
 
-<RadzenCard class="rz-my-12 rz-mx-auto" Style="width: 500px; height: 820px;">
-    <RadzenStack Gap="1rem">
-        <RadzenStack Orientation="Orientation.Vertical" AlignItems="AlignItems.Center">
-            <RadzenStack JustifyContent="JustifyContent.Center" Gap="1rem">
-                <SlidesCarousel SlidesPath="_paths" IntervalInSeconds="1"/>
-                    <RadzenFormField Text="Title" Variant="Variant.Filled" Style="width: 100%;">
-                        <RadzenTextBox Name="UserName" @bind-Value="@_video.Name" Style="width: 100%"/>
-                    </RadzenFormField>
-                <RadzenFormField Text="Description" Variant="Variant.Filled" Style="width: 100%;">
-                    <RadzenTextArea Name="Description" Rows="6" @bind-Value="@_video.Description" Style="width: 100%"/>
-                </RadzenFormField>
-                <RadzenStack Orien2tation="Orientation.Horizontal" JustifyContent="JustifyContent.SpaceEvenly">
-                    <RadzenButton Size="ButtonSize.Large" ButtonStyle="ButtonStyle.Success" Click="@OnEdit">Edit</RadzenButton>
-                    <RadzenButton Size="ButtonSize.Large" ButtonStyle="ButtonStyle.Danger" Click="@OnDelete">Delete</RadzenButton>
-                </RadzenStack>
-            </RadzenStack>
+<RadzenCard class="rz-my-12 rz-mx-auto" Style="width: 300px;">
+    <RadzenStack JustifyContent="JustifyContent.Center" Gap="1rem">
+        <SlidesCarousel SlidesPath="_paths" IntervalInSeconds="1"/>
+        <RadzenFormField ReadOnly="@(!_editMode)" Text="Title" Variant="Variant.Filled" Style="width: 100%;">
+            <RadzenTextBox ReadOnly="@(!_editMode)"  Name="UserName" @bind-Value="@Model.Name" Style="width: 100%"/>
+        </RadzenFormField>
+        <RadzenFormField Text="Description" Variant="Variant.Filled" Style="width: 100%;">
+            <RadzenTextArea ReadOnly="@(!_editMode)" Name="Description" Rows="3" @bind-Value="@Model.Description" Style="width: 100%"/>
+        </RadzenFormField>
+        <RadzenStack Visible="@(!_editMode)" Orientation="Orientation.Horizontal" JustifyContent="JustifyContent.SpaceEvenly">
+            <RadzenButton Size="ButtonSize.Large" ButtonStyle="ButtonStyle.Success" Click="@OnEditEnabled">Edit</RadzenButton>
+            <RadzenButton Size="ButtonSize.Large" ButtonStyle="ButtonStyle.Danger" Click="@OnDelete">Delete</RadzenButton>
+        </RadzenStack>
+        <RadzenStack Visible="@(_editMode)" Orientation="Orientation.Horizontal" JustifyContent="JustifyContent.SpaceEvenly">
+            <RadzenButton Size="ButtonSize.Large" ButtonStyle="ButtonStyle.Success" Click="@OnSave">Save</RadzenButton>
+            <RadzenButton Size="ButtonSize.Large" ButtonStyle="ButtonStyle.Danger" Click="@OnCancel">Cancel</RadzenButton>
         </RadzenStack>
     </RadzenStack>
 </RadzenCard>
 
 @code {
+
+    [Parameter, EditorRequired] public required VideoCardModel Model { get; set; }
     
-    [Parameter,EditorRequired]
-    public required Tuple<string, string> VideoFilePathAndId { get; set; }
+    [Parameter, EditorRequired]
+    public required Func<Task>  OnDataChange { get; set; }
+
+    private bool _editMode = false;
+
 
     protected override Task OnInitializedAsync()
     {
-        _slidePath = Path.Combine(Path.GetDirectoryName(VideoFilePathAndId.Item1)??throw new ArgumentException("no video path"), "slides");
-        _paths = Enumerable.Range(0, MediaStorageService.SlidesAmount).Select(x => Path.Combine(_slidePath, $"{x}.png")).ToList();
-        _paths.Select(x => { Console.WriteLine(x);
-            return x;
-        });
+        var slidePath = Path.Combine(Path.GetDirectoryName(Model.Path)??"", "slides");
+        _paths = Enumerable.Range(0, MediaStorageService.SlidesAmount).Select(x => Path.Combine(slidePath, $"{x}.png")).ToList();
         return base.OnInitializedAsync();
     }
-
-    private string _slidePath;
+    
     private List<string>? _paths;
-
-    private VideoDto _video = new();
-
-    private void OnEdit()
+    
+    private void OnEditEnabled()
     {
-        
+        _editMode = true;
         StateHasChanged();
     }
+
     private async Task OnDelete()
     {
-        
-            var video = await Context.Set<VideoRow>().FirstAsync(x => x.Id == VideoFilePathAndId.Item2);
-            Context.Set<VideoRow>().Remove(video);
-            await Context.SaveChangesAsync();
-            var basePath = Environment.WebRootPath;
-            var fullPath = Path.Combine(basePath, Path.GetDirectoryName(VideoFilePathAndId.Item1) ?? "");
-            Directory.Delete(fullPath, true);
+        var video = await Context.Set<VideoRow>().FirstAsync(x => x.Id == Model.Id);
+        Context.Set<VideoRow>().Remove(video);
+        await Context.SaveChangesAsync();
+        var basePath = Environment.WebRootPath;
+        var fullPath = Path.Combine(basePath, Path.GetDirectoryName(Model.Path) ?? "");
+        Directory.Delete(fullPath, true);
+        await OnDataChange.Invoke();
     }
 
-    // async Task OnClientChange(UploadChangeEventArgs args)
-    // {
-    //     foreach (var file in args.Files)
-    //     {
-    //         try
-    //         {
-    //             var request = new MediaSaveRequest
-    //             {
-    //                 MediaId = Guid.NewGuid().ToString(),
-    //                 MediaType = MultimediaType.Video,
-    //                 OwnerId = "dummy",
-    //                 // OwnerId = UserId,
-    //                 FileContent = file
-    //             };
-    //             var tmp =await MediaService.SaveFileAsync(request);
-    //             StateHasChanged();
-    //             
-    //         }
-    //         catch (Exception ex)
-    //         {
-    //             Console.WriteLine($"Error uploading file {file.Name}: {ex.Message}");
-    //         }
-    //     }
-    // }
 
-    private class VideoDto
+    private async Task OnSave()
     {
-        public string Description { get; set; } = "";
-        public string Name { get; set; } = "";
+        if (Model.StateHasChanged())
+        {
+            var video = await Context.Set<VideoRow>().FirstAsync(x => x.Id == Model.Id);
+            video.Description = Model.Description;
+            video.Name = Model.Name;
+            await Context.SaveChangesAsync();
+            Model.SetOriginalState();
+        }
+        _editMode = false;
+        StateHasChanged();
     }
+
+    private void OnCancel()
+    {
+        Model.RestoreOriginalState();
+        _editMode = false;
+        StateHasChanged();
+    }
+
 }
+

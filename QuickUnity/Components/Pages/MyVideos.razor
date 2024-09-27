@@ -6,43 +6,48 @@
 @using QuickUnity.Data
 @using QuickUnity.Components.Components
 @using QuickUnity.Components.Modals
+@using QuickUnity.Entities
 @inject ApplicationDbContext DbContext;
 @inject AuthenticationStateProvider AuthenticationStateProvider
 @inject DialogService DialogService
 
 <AuthorizeView>
+    <RadzenButton Icon="add_circle"  Size="ButtonSize.Large" Click="@(()=>VideoLoaderModal(context.User.Identity?.Name??""))">Add new video</RadzenButton>
     <RadzenStack Orientation="Orientation.Horizontal" Wrap="FlexWrap.Wrap" AlignItems="AlignItems.Center" JustifyContent="JustifyContent.Left">
-        @foreach (var path in _paths)
+        @foreach (var path in _models)
         {
-            <VideoCard VideoFilePathAndId="@path"/>
+            <VideoCard OnDataChange="@FetchData" Model="@path"/>
         }
     </RadzenStack>
-    <RadzenButton Variant="Variant.Text" Click="@(()=>ShowAvatarModal(context.User.Identity?.Name??""))">AAAAA! kliknij mnie</RadzenButton>
 </AuthorizeView>
 
 @code {
-    List<Tuple<string, string>> _paths = [];
+    List<VideoCardModel> _models = [];
+    string _username = "";
     protected override async Task OnInitializedAsync()
     {
-        var username = (await AuthenticationStateProvider.GetAuthenticationStateAsync()).User.Identity?.Name ?? throw new Exception("smth wrong with user");
-        _paths = (await DbContext.Set<ApplicationUser>()
-            .Include(x => x.Profile)
-                .ThenInclude(x => x.Videos)
-            .FirstAsync(x => x.UserName == username)).Profile.Videos
-                .Select(x => new Tuple<string, string>(x.Path,x.Id)).ToList();
+        _username = (await AuthenticationStateProvider.GetAuthenticationStateAsync()).User.Identity?.Name ?? throw new Exception("smth wrong with user");
+        await FetchData();
+
 
         base.OnInitializedAsync();
     }
 
-    private async Task ShowAvatarModal(string Username)
+    private async Task FetchData()
     {
-        await DialogService.OpenAsync<VideoLoaderModal>($"Add new video",
-            new Dictionary<string, object>() { { "Username", Username} },
-            new DialogOptions() 
-            {
-                Resizable = true, 
-                Draggable = true,
-            });
+        _models = (await DbContext.Set<ApplicationUser>()
+                .Include(x => x.Profile)
+                .ThenInclude(x => x.Videos)
+                .FirstAsync(x => x.UserName == _username)).Profile.Videos
+            .Select(x => new VideoCardModel(x)).ToList();
+        StateHasChanged();
+    }
+
+    private async Task VideoLoaderModal(string username)
+    {
+        await DialogService.OpenAsync<VideoLoaderModal>("Add new video", 
+            new Dictionary<string, object> { { "Username", username }, { "OnDataChange", FetchData } },
+            new DialogOptions { Resizable = true, Draggable = true });
     }
 
 }

@@ -1,6 +1,6 @@
 @inherits ComponentBase
 
-<RadzenImage Path="@_patch" class="rz-mx-auto rz-my-12"/>
+<RadzenImage Path="@_patch" class="rz-mx-auto rz-my-12" Style="width: 260px;"/>
 
 @code {
     private string _patch; 
@@ -20,6 +20,10 @@
 
     private async Task ChangePictureAsync()
     {
+        var random = new Random();
+        var randomNumber = random.Next(0, IntervalInSeconds * 1000); // looks nicer when not all start at once
+        await Task.Delay(randomNumber);
+        
         while (_isComponentActive)
         {
 

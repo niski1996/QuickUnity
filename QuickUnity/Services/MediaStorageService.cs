@@ -198,7 +198,7 @@ public class MediaStorageService
         {
             // Get the duration of the video
             double videoDuration = videoProcessor.GetLengthInSeconds(filePath);
-            var interval = videoDuration / thumbnailCount+1; // Calculate interval
+            var interval = videoDuration / (thumbnailCount+1); // Calculate interval
 
             for (var i = 0; i < thumbnailCount; i++)
             {
