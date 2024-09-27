@@ -1,4 +1,5 @@
 @using Microsoft.EntityFrameworkCore
+@using QuickUnity.Components.Modals
 @using QuickUnity.Data
 @using QuickUnity.Data.Tables
 @using QuickUnity.Entities
@@ -9,7 +10,7 @@
 @inject IWebHostEnvironment Environment;
 
 <RadzenCard class="rz-my-12 rz-mx-auto" Style="width: 300px;">
-    <RadzenStack JustifyContent="JustifyContent.Center" Gap="1rem">
+    <RadzenStack JustifyContent="JustifyContent.Center" Gap="1rem" onclick="@OpenPlayer">
         <SlidesCarousel SlidesPath="_paths" IntervalInSeconds="1"/>
         <RadzenFormField ReadOnly="@(!_editMode)" Text="Title" Variant="Variant.Filled" Style="width: 100%;">
             <RadzenTextBox ReadOnly="@(!_editMode)"  Name="UserName" @bind-Value="@Model.Name" Style="width: 100%"/>
@@ -63,7 +64,13 @@
         Directory.Delete(fullPath, true);
         await OnDataChange.Invoke();
     }
-
+    
+    private async Task OpenPlayer()
+    {
+        await DialogService.OpenAsync<Player>(Model.Name, 
+            new Dictionary<string, object> { { "VideoPath", Model.Path}},
+            new DialogOptions { Resizable = true, Draggable = true });
+    }
 
     private async Task OnSave()
     {

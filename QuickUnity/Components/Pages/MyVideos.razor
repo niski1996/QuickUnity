@@ -12,7 +12,7 @@
 @inject DialogService DialogService
 
 <AuthorizeView>
-    <RadzenButton Icon="add_circle"  Size="ButtonSize.Large" Click="@(()=>VideoLoaderModal(context.User.Identity?.Name??""))">Add new video</RadzenButton>
+    <RadzenButton Icon="add_circle"  Size="ButtonSize.Large" Click="@(()=>OpenVideoLoaderModal(context.User.Identity?.Name??""))">Add new video</RadzenButton>
     <RadzenStack Orientation="Orientation.Horizontal" Wrap="FlexWrap.Wrap" AlignItems="AlignItems.Center" JustifyContent="JustifyContent.Left">
         @foreach (var path in _models)
         {
@@ -43,7 +43,7 @@
         StateHasChanged();
     }
 
-    private async Task VideoLoaderModal(string username)
+    private async Task OpenVideoLoaderModal(string username)
     {
         await DialogService.OpenAsync<VideoLoaderModal>("Add new video", 
             new Dictionary<string, object> { { "Username", username }, { "OnDataChange", FetchData } },

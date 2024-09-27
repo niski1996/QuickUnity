@@ -1,0 +1,17 @@
+@inject DialogService DialogService
+<video controls width="480" style="border-radius: 30px;">
+    <source src="@VideoPath" type="video/mp4" />
+</video>
+
+@code {
+    
+    [Parameter, EditorRequired]
+    public string VideoPath { get; set; } = string.Empty;
+
+    [Parameter]
+    public EventCallback<bool> OnVideoEnded { get; set; }
+    private void HandleVideoEnded()
+    {
+        DialogService.Close(true);
+    }
+}
