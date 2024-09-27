@@ -1,0 +1,119 @@
+@attribute [Route($"/{AppRoutes.MyApprentices}")]
+@using System.Data
+@using System.Linq.Dynamic.Core
+@using Microsoft.AspNetCore.Identity
+@using Microsoft.EntityFrameworkCore
+@using QuickUnity.Common
+@using QuickUnity.Data
+@using QuickUnity.Data.Tables
+@using QuickUnity.Services
+@inject ApplicationDbContext Context;
+@inject MediaStorageService MediaService
+@inject DialogService DialogService
+@inject AuthenticationStateProvider AuthenticationStateProvider
+
+
+<RadzenStack JustifyContent="JustifyContent.SpaceBetween" Orientation="Orientation.Vertical">
+
+    <RadzenDataGrid @ref="grid" AllowRowSelectOnRowClick="@true" AllowFiltering="true" FilterPopupRenderMode="PopupRenderMode.OnDemand" FilterCaseSensitivity="FilterCaseSensitivity.CaseInsensitive" AllowPaging="true" PageSize="20"
+                    AllowSorting="true" Data="@_users" ColumnWidth="200px" CellRender="OnCellRender"
+                    SelectionMode="DataGridSelectionMode.Multiple" @bind-Value=@_myApprentice>
+        <HeaderTemplate>
+            <RadzenStack Orientation="Orientation.Horizontal" Gap="3rem"></RadzenStack>
+            <RadzenButton Click="@Save" ButtonStyle="ButtonStyle.Success">Save Actual State</RadzenButton>
+            <RadzenButton Click="@SetApprentices" ButtonStyle="ButtonStyle.Success">Reset</RadzenButton>
+        </HeaderTemplate>
+        <Columns>
+            <RadzenDataGridColumn Title="Photo" Frozen="true" Sortable="false" Filterable="false" Width="80px" TextAlign="TextAlign.Center">
+                <Template Context="data">
+                    <RadzenButton Variant="Variant.Text">
+                        <RadzenImage Visible="MediaService.AvatarAvailable(data.Username)" Style="width: 40px; height: 40px; border-radius: 50%;" Path="@MediaService.GetAvatarRelativePatch(data.Username)"></RadzenImage>
+                        <RadzenGravatar Visible="@(!MediaService.AvatarAvailable(data.Username))" Email=@(data.Username)/>
+                    </RadzenButton>
+                </Template>
+            </RadzenDataGridColumn>
+            <RadzenDataGridColumn Property="@nameof(UserDto.Name)" Title="First Name" Frozen="true" Width="160px"/>
+            <RadzenDataGridColumn Property="@nameof(UserDto.LastName)" Title="Last Name" Width="160px"/>
+            <RadzenDataGridColumn Property="@nameof(UserDto.Username)" Title="Username" Width="200px"/>
+            <RadzenDataGridColumn Property="@nameof(UserDto.JoinDate)" Title="User since" Width="100px"/>
+        </Columns>
+    </RadzenDataGrid>
+</RadzenStack>
+
+@code {
+    private RadzenDataGrid<UserDto> grid;
+    private IEnumerable<UserDto> _users = new List<UserDto>();
+    private IList<UserDto> _myApprentice = new List<UserDto>();
+    private Guid _dashboardOwnerId;
+    private List<Guid>? _myApprenticesId;
+
+    protected override async Task OnInitializedAsync()
+    {
+        var actualUsername = (await AuthenticationStateProvider.GetAuthenticationStateAsync()).User.Identity?.Name ?? throw new Exception("smth wrong with user");
+        _dashboardOwnerId = (await Context.Set<ApplicationUser>().Include(x=>x.Profile).FirstAsync(x => x.UserName == actualUsername)).Profile?.Id 
+                            ?? throw new DataException($"user {actualUsername} don't have a profile");
+        await FetchData();
+        base.OnInitializedAsync();
+    }
+
+    void OnCellRender(DataGridCellRenderEventArgs<UserDto> args)
+        => args.Attributes.Add("style", _myApprentice.Contains(args.Data) ? $"background-color: var(--rz-success);" : $"background-color: var(--rz-danger);");
+
+
+    private async Task FetchData()
+    {
+        _myApprenticesId =(await Context.Set<TrainerRow>()
+            .Include(x => x.Apprentices)
+            .FirstOrDefaultAsync(x => x.TrainerProfile.Id == _dashboardOwnerId))?
+            .Apprentices.Select(x => x.Id).ToList();
+        _users = Context.Set<ApplicationUser>().Include(x => x.Profile).Select(x => new UserDto(x)).ToList();
+        SetApprentices();
+    }
+
+    private void SetApprentices()
+    {
+        _myApprentice = _myApprenticesId is null ? [] : _users.Where(x => _myApprenticesId.Contains(x.ProfileId)).ToList();
+        grid.Reset();
+    }
+
+
+    private async Task Save()
+    {
+        var training = await Context.Set<TrainerRow>()
+            .Include(x => x.Apprentices)
+            .FirstOrDefaultAsync(x => x.TrainerProfile.Id == _dashboardOwnerId);
+        var allApprenticesProfiles = Context.Set<ProfileRow>().Where(x => _myApprentice.Select(y => y.ProfileId).ToList().Contains(x.Id)).ToList();
+        if (training is null)
+        {
+            var trainerProfile =await Context.Set<ProfileRow>().FirstAsync(x => x.Id == _dashboardOwnerId);
+            training = new TrainerRow() { TrainerProfile = trainerProfile, Apprentices = allApprenticesProfiles };
+            await Context.AddAsync(training);
+        }
+        else
+            training.Apprentices = allApprenticesProfiles;
+        
+        await Context.SaveChangesAsync();
+        await FetchData();
+    }
+
+    private class UserDto
+    {
+        public UserDto(ApplicationUser user)
+        {
+            if (user.Profile == null) return;
+            ProfileId = user.Profile.Id;
+            Username = user.UserName ?? "";
+            Name = user.Profile.Name;
+            LastName = user.Profile.LastName;
+            JoinDate = user.Profile?.JoinDate ?? new DateOnly();
+        }
+
+        public Guid ProfileId { get; set; }
+        public string Name { get; set; }
+        public string LastName { get; set; }
+        public string Username { get; set; }
+        public DateOnly JoinDate { get; set; }
+    }
+
+
+}

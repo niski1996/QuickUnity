@@ -1,5 +1,7 @@
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.ChangeTracking;
+using Microsoft.EntityFrameworkCore.ValueGeneration;
 using QuickUnity.Data.Tables;
 
 namespace QuickUnity.Data;
@@ -27,7 +29,11 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
             entity.Property(e => e.InsertDate).HasDefaultValueSql("NOW()").ValueGeneratedOnAdd();
 
         });
-        builder.Entity<TrainerRow>();
+        builder.Entity<TrainerRow>(entity =>
+        {
+            entity.HasKey(e => e.Id);
+            entity.Property(e => e.Id).ValueGeneratedOnAdd().HasDefaultValueSql("gen_random_uuid()");
+        });
 
         base.OnModelCreating(builder);
     }

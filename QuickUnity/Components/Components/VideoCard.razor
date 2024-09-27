@@ -60,35 +60,35 @@
             var video = await Context.Set<VideoRow>().FirstAsync(x => x.Id == VideoFilePathAndId.Item2);
             Context.Set<VideoRow>().Remove(video);
             await Context.SaveChangesAsync();
-            string basePath = Environment.WebRootPath;
-            string fullPath = Path.Combine(basePath, Path.GetDirectoryName(VideoFilePathAndId.Item1) ?? "");
+            var basePath = Environment.WebRootPath;
+            var fullPath = Path.Combine(basePath, Path.GetDirectoryName(VideoFilePathAndId.Item1) ?? "");
             Directory.Delete(fullPath, true);
     }
 
-    async Task OnClientChange(UploadChangeEventArgs args)
-    {
-        foreach (var file in args.Files)
-        {
-            try
-            {
-                var request = new MediaSaveRequest
-                {
-                    MediaId = Guid.NewGuid().ToString(),
-                    MediaType = MultimediaType.Video,
-                    OwnerId = "dummy",
-                    // OwnerId = UserId,
-                    FileContent = file
-                };
-                var tmp =await MediaService.SaveFileAsync(request);
-                StateHasChanged();
-                
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"Error uploading file {file.Name}: {ex.Message}");
-            }
-        }
-    }
+    // async Task OnClientChange(UploadChangeEventArgs args)
+    // {
+    //     foreach (var file in args.Files)
+    //     {
+    //         try
+    //         {
+    //             var request = new MediaSaveRequest
+    //             {
+    //                 MediaId = Guid.NewGuid().ToString(),
+    //                 MediaType = MultimediaType.Video,
+    //                 OwnerId = "dummy",
+    //                 // OwnerId = UserId,
+    //                 FileContent = file
+    //             };
+    //             var tmp =await MediaService.SaveFileAsync(request);
+    //             StateHasChanged();
+    //             
+    //         }
+    //         catch (Exception ex)
+    //         {
+    //             Console.WriteLine($"Error uploading file {file.Name}: {ex.Message}");
+    //         }
+    //     }
+    // }
 
     private class VideoDto
     {

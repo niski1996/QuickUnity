@@ -17,4 +17,5 @@ public static class AppRoutes
     public const string Manage = $"{Account}/Manage";
     public const string Notifications = $"{Account}/Notifications";
     public const string Admin = "AdminPanel";
+    public const string MyApprentices = "MyApprentices";
 }
