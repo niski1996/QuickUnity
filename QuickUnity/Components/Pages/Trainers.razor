@@ -1,25 +1,14 @@
 @attribute [Route($"/{AppRoutes.Trainers}")]
-
-@using System.Linq.Dynamic.Core
 @using Microsoft.AspNetCore.Authorization
-@using Microsoft.AspNetCore.Identity
 @using Microsoft.EntityFrameworkCore
 @using QuickUnity.Common
-@using QuickUnity.Components.Account
-@using QuickUnity.Components.Account.Pages.Manage
 @using QuickUnity.Entities.Enums
 @using QuickUnity.Components.Components
 @using QuickUnity.Data
 @using QuickUnity.Data.Tables
 @inject ApplicationDbContext Context;
-@inject SignInManager<ApplicationUser> SignInManager
-@inject UserManager<ApplicationUser> UserManager
-@inject IdentityUserAccessor UserAccessor
 @inject AuthenticationStateProvider AuthenticationStateProvider
 @attribute [Authorize]
-
-
-
 
 <RadzenDataList WrapItems="true" AllowPaging="false" Data="@persons" TItem="PersonalCardModel">
     <Template Context="person">

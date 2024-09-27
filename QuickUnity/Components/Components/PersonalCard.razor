@@ -47,6 +47,6 @@
     {
         await DialogService.OpenAsync<TrainerVideosModal>(PersonalCardModel.Name, 
             new Dictionary<string, object> { { "PersonalCardModel", PersonalCardModel}},
-            new DialogOptions { Resizable = true, Draggable = true });
+            new DialogOptions { Resizable = true, Draggable = true, Width = "100%"});
     }
 }

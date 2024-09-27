@@ -1,11 +1,12 @@
 @using QuickUnity.Entities
 @using QuickUnity.Entities.Enums
 @using QuickUnity.Components.Components
-
-@foreach (var path in models)
-{
-<VideoReadonlyCard  Model="@path"/>
-}
+<RadzenStack Orientation="Orientation.Horizontal">
+    @foreach (var path in models)
+    {
+        <VideoReadonlyCard  Model="@path"/>
+    }
+</RadzenStack>
 @code {
     private List<VideoCardModel> models;
     [Parameter, EditorRequired] public required PersonalCardModel PersonalCardModel { get; set; }
