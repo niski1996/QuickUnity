@@ -1,0 +1,32 @@
+version: '3.8'
+
+services:
+  web:
+    image: quickunity:latest
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "8080:8080"
+      - "8081:8081"
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - ConnectionStrings__DefaultConnection=Host=db;Port=5432;Database=test;Username=postgres;Password=postgres
+    depends_on:
+      - db
+    command: >
+      sh -c "until nc -z db 5432; do echo 'Waiting for database...'; sleep 1; done; dotnet run"
+
+  db:
+    image: postgres:15
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_DB: test
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+
+volumes:
+  pgdata:

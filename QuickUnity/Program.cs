@@ -6,6 +6,7 @@ using QuickUnity.Components.Account;
 using QuickUnity.Data;
 using QuickUnity.Services;
 using Radzen;
+using QuickUnity;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -22,7 +23,7 @@ builder.Services.AddSingleton<MediaStorageService>();
 builder.Services.AddRadzenComponents();
 builder.Services.AddRadzenCookieThemeService(options =>
 {
-    options.Name = "RoadMapTheme"; // The name of the cookie
+    options.Name = "DrillRoad"; // The name of the cookie
     options.Duration = TimeSpan.FromDays(365); // The duration of the cookie
 });
 
@@ -61,6 +62,7 @@ else
     app.UseHsts();
 }
 
+app.ApplyMigrations();
 app.Use(async (context, next) =>
 {
     context.Response.Headers.Append("Cache-Control", "no-cache, no-store, must-revalidate");
