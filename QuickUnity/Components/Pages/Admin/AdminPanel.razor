@@ -6,6 +6,7 @@
 @using QuickUnity.Common
 @using QuickUnity.Components.Modals
 @using QuickUnity.Data
+@using QuickUnity.Entities.Enums
 @using QuickUnity.Services
 @inject ApplicationDbContext Context;
 @inject IServiceScopeFactory ScopeFactory;
@@ -145,12 +146,5 @@
         public bool EmailConfirmed { get; set; }
         public string Role { get; set; }
     }
-
-    private enum PredefinedRoles
-    {
-        User,
-        Trainer,
-        Admin,
-    }
-
+    
 }

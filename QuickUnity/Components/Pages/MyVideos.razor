@@ -10,6 +10,7 @@
 @inject ApplicationDbContext DbContext;
 @inject AuthenticationStateProvider AuthenticationStateProvider
 @inject DialogService DialogService
+@attribute [Authorize]
 
 <AuthorizeView>
     <RadzenButton Icon="add_circle"  Size="ButtonSize.Large" Click="@(()=>OpenVideoLoaderModal(context.User.Identity?.Name??""))">Add new video</RadzenButton>

@@ -4,11 +4,11 @@
 @using QuickUnity.Components.Modals
 @using QuickUnity.Components.Pages
 @using QuickUnity.Data
+@using QuickUnity.Entities.Enums
 @using QuickUnity.Services
 @inject ThemeService ThemeService
 @inject NavigationManager Nav
 @* idk why, required by radzen *@
-@inject CookieThemeService CookieThemeService
 @inject SignInManager<ApplicationUser> SignInManager
 @inject DialogService DialogService
 @inject MediaStorageService MediaService
@@ -32,16 +32,15 @@
                     <Template>
                         <AuthorizeView>
                             <RadzenImage Visible="@(MediaService.AvatarAvailable(context.User.Identity?.Name ?? ""))" Style="width: 32px; height: 32px; border-radius: 50%;" Path="@MediaService.GetAvatarRelativePatch(context.User.Identity?.Name ?? "")"></RadzenImage>
-                            <RadzenGravatar Visible="@(!MediaService.AvatarAvailable(context.User.Identity?.Name ?? ""))"  Email=@(context.User.Identity?.Name ?? "dummy")/>
+                            <RadzenGravatar Visible="@(!MediaService.AvatarAvailable(context.User.Identity?.Name ?? ""))" Email=@(context.User.Identity?.Name ?? "dummy")/>
                         </AuthorizeView>
                     </Template>
                     <ChildContent>
                         <AuthorizeView>
                             <Authorized>
                                 <RadzenProfileMenuItem Text=@(context.User.Identity?.Name != null ? context.User.Identity.Name[..context.User.Identity.Name.IndexOf('@')] : "account")
-                                                       Path="@AppRoutes.Manage" Icon="person"></RadzenProfileMenuItem>
-                                <RadzenProfileMenuItem Text="Notification" Path="@AppRoutes.Notifications" Icon="notifications"></RadzenProfileMenuItem>
-                                <RadzenProfileMenuItem Text="Notification" Path="@AppRoutes.Notifications" Icon="notifications"></RadzenProfileMenuItem>
+                                                       Path="@AppRoutes.Manage" Icon="person">
+                                </RadzenProfileMenuItem>
                                 <RadzenProfileMenuItem Text="Settings" Path="@AppRoutes.Settings" Icon="settings"></RadzenProfileMenuItem>
                             </Authorized>
                             <NotAuthorized>
@@ -69,12 +68,27 @@
     <RadzenSidebar Responsive="false" Style="width: max-content">
         <RadzenPanelMenu DisplayStyle="@(_sidebarExpanded ? MenuItemDisplayStyle.IconAndText : MenuItemDisplayStyle.Icon)" ShowArrow="false">
             <RadzenPanelMenuItem Text="Home" Icon="home" Path=""/>
-            <RadzenPanelMenuItem Text="Trainers" Icon="self_improvement" Path="@AppRoutes.Trainers"/>
-            <RadzenPanelMenuItem Text="My Apprentices" Icon="cast_for_education" Path="@AppRoutes.MyApprentices"/>
-            <RadzenPanelMenuItem Text="Admin" Icon="admin_panel_settings" Path="@AppRoutes.Admin"/>
-            <RadzenPanelMenuItem Text="My Video" Icon="sports_kabaddi" Path="@AppRoutes.MyVideo">
-            </RadzenPanelMenuItem>
-            <RadzenPanelMenuItem Text="Settings" Icon="dashboard"/>
+            <AuthorizeView>
+                <Authorized>
+                    <RadzenPanelMenuItem Text="My Video" Icon="sports_kabaddi" Path="@AppRoutes.MyVideo"/>
+                    <RadzenPanelMenuItem Text="Trainers" Icon="self_improvement" Path="@AppRoutes.Trainers"/>
+                    <RadzenPanelMenuItem Text="Settings" Icon="dashboard" Path="@AppRoutes.Manage"/>
+                </Authorized>
+                <NotAuthorized>
+                    <RadzenPanelMenuItem Text="Login" Icon="login" Path="@AppRoutes.Login"/>
+                    <RadzenPanelMenuItem Text="Register" Icon="app_registration" Path="@AppRoutes.Register"/>
+                </NotAuthorized>
+            </AuthorizeView>
+            <AuthorizeView Roles="@PredefinedRoles.Admin.ToString()">
+                <Authorized>
+                    <RadzenPanelMenuItem Text="Admin panel" Icon="admin_panel_settings" Path="@AppRoutes.Admin"/>
+                </Authorized>
+            </AuthorizeView>
+            <AuthorizeView Roles="@PredefinedRoles.Trainer.ToString()">
+                <Authorized>
+                    <RadzenPanelMenuItem Text="My Apprentices" Icon="cast_for_education" Path="@AppRoutes.MyApprentices"/>
+                </Authorized>
+            </AuthorizeView>
         </RadzenPanelMenu>
     </RadzenSidebar>
     <RadzenBody Style="background-image: url('./backgrounds/bg.jpg'); background-size: cover; background-position: center; ">
@@ -92,19 +106,19 @@
 @code{
     private bool _sidebarExpanded = true;
     private string? _currentUrl;
-    
+
     private void OnLocationChanged(object? sender, LocationChangedEventArgs e)
     {
         _currentUrl = Nav.ToBaseRelativePath(e.Location);
         StateHasChanged();
     }
-    
+
     protected override void OnInitialized()
     {
         _currentUrl = Nav.ToBaseRelativePath(Nav.Uri);
         Nav.LocationChanged += OnLocationChanged;
     }
-    
+
     public void Dispose()
     {
         Nav.LocationChanged -= OnLocationChanged;
@@ -114,9 +128,9 @@
     {
         await DialogService.OpenAsync<AvatarLoaderModal>($"Avatar choose",
             new Dictionary<string, object>() { { "UserId", userId } },
-            new DialogOptions() 
+            new DialogOptions()
             {
-                Resizable = true, 
+                Resizable = true,
                 Draggable = true,
             });
     }
@@ -127,7 +141,7 @@
         ThemeService.SetTheme(value);
         StateHasChanged();
     }
-    
+
     private async Task Logout()
     {
         await SignInManager.SignOutAsync();
