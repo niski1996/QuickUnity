@@ -1,0 +1,19 @@
+@using QuickUnity.Entities
+@using QuickUnity.Entities.Enums
+@using QuickUnity.Components.Components
+
+@foreach (var path in models)
+{
+<VideoReadonlyCard  Model="@path"/>
+}
+@code {
+    private List<VideoCardModel> models;
+    [Parameter, EditorRequired] public required PersonalCardModel PersonalCardModel { get; set; }
+    
+    protected override Task OnInitializedAsync()
+    {
+        models = PersonalCardModel.Video.Select(x => new VideoCardModel(x)).ToList();
+        return base.OnInitializedAsync();
+    }
+
+}

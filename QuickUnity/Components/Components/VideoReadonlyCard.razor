@@ -1,0 +1,44 @@
+@using QuickUnity.Components.Modals
+@using QuickUnity.Data
+@using QuickUnity.Entities
+@using QuickUnity.Services
+@inject DialogService DialogService
+@inject ApplicationDbContext Context;
+@inject IWebHostEnvironment Environment;
+
+<RadzenCard class="rz-my-12 rz-mx-auto" Style="width: 300px;">
+    <RadzenStack JustifyContent="JustifyContent.Center" Gap="1rem" onclick="@OpenPlayer">
+        <SlidesCarousel SlidesPath="_paths" IntervalInSeconds="1"/>
+        <RadzenFormField  Text="Title" Variant="Variant.Filled" Style="width: 100%;">
+            <RadzenTextBox ReadOnly="@true"  Name="UserName" @bind-Value="@Model.Name" Style="width: 100%"/>
+        </RadzenFormField>
+        <RadzenFormField Text="Description" Variant="Variant.Filled" Style="width: 100%;">
+            <RadzenTextArea ReadOnly="@true" Name="Description" Rows="3" @bind-Value="@Model.Description" Style="width: 100%"/>
+        </RadzenFormField>
+    </RadzenStack>
+</RadzenCard>
+
+@code {
+
+    [Parameter, EditorRequired] public required VideoCardModel Model { get; set; }
+    
+
+    protected override Task OnInitializedAsync()
+    {
+        var slidePath = Path.Combine(Path.GetDirectoryName(Model.Path)??"", "slides");
+        _paths = Enumerable.Range(0, MediaStorageService.SlidesAmount).Select(x => Path.Combine(slidePath, $"{x}.png")).ToList();
+        return base.OnInitializedAsync();
+    }
+    
+    private List<string>? _paths;
+    
+    
+    private async Task OpenPlayer()
+    {
+        await DialogService.OpenAsync<Player>(Model.Name, 
+            new Dictionary<string, object> { { "VideoPath", Model.Path}},
+            new DialogOptions { Resizable = true, Draggable = true });
+    }
+    
+}
+

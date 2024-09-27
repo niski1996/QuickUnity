@@ -64,7 +64,7 @@
     {
         _myApprenticesId =(await Context.Set<TrainerRow>()
             .Include(x => x.Apprentices)
-            .FirstOrDefaultAsync(x => x.TrainerProfile.Id == _dashboardOwnerId))?
+            .FirstOrDefaultAsync(x => x.ProfileRow.Id == _dashboardOwnerId))?
             .Apprentices.Select(x => x.Id).ToList();
         _users = Context.Set<ApplicationUser>().Include(x => x.Profile).Select(x => new UserDto(x)).ToList();
         SetApprentices();
@@ -81,12 +81,12 @@
     {
         var training = await Context.Set<TrainerRow>()
             .Include(x => x.Apprentices)
-            .FirstOrDefaultAsync(x => x.TrainerProfile.Id == _dashboardOwnerId);
+            .FirstOrDefaultAsync(x => x.ProfileRow.Id == _dashboardOwnerId);
         var allApprenticesProfiles = Context.Set<ProfileRow>().Where(x => _myApprentice.Select(y => y.ProfileId).ToList().Contains(x.Id)).ToList();
         if (training is null)
         {
             var trainerProfile =await Context.Set<ProfileRow>().FirstAsync(x => x.Id == _dashboardOwnerId);
-            training = new TrainerRow() { TrainerProfile = trainerProfile, Apprentices = allApprenticesProfiles };
+            training = new TrainerRow() { ProfileRow = trainerProfile, Apprentices = allApprenticesProfiles };
             await Context.AddAsync(training);
         }
         else

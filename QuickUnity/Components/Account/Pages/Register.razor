@@ -1,5 +1,4 @@
 ﻿@attribute [Route($"/{AppRoutes.Register}")]
-
 @using System.ComponentModel.DataAnnotations
 @using System.Text
 @using System.Text.Encodings.Web
@@ -55,6 +54,16 @@
             <div class="form-floating mb-3">
                 <InputText @bind-Value="Input.LastName" class="form-control" aria-required="true" placeholder="Last Name"/>
                 <label for="last-name" style="color:black">Last Name</label>
+                <ValidationMessage For="() => Input.LastName" class="text-danger"/>
+            </div>
+            <div class="form-floating mb-3">
+                <InputText @bind-Value="Input.City" class="form-control" aria-required="true" placeholder="city"/>
+                <label for="city" style="color:black">City</label>
+                <ValidationMessage For="() => Input.LastName" class="text-danger"/>
+            </div>
+            <div class="form-floating mb-3">
+                <InputText @bind-Value="Input.Club" class="form-control" aria-required="true" placeholder="club"/>
+                <label for="club" style="color:black">Club</label>
                 <ValidationMessage For="() => Input.LastName" class="text-danger"/>
             </div>
             <button type="submit" class="w-100 btn btn-lg btn-primary">Register</button>
@@ -123,7 +132,9 @@
         {
             ApplicationUser = user,
             Name = Input.Name,
-            LastName = Input.LastName
+            LastName = Input.LastName,
+            Club = Input.Club,
+            City = Input.City
 
         };
         await Context.Set<ProfileRow>().AddAsync(profile);
@@ -182,6 +193,13 @@
         [RegularExpression("^[a-zA-Z0-9]+$", ErrorMessage = "Last Name can only contain alphanumeric characters.")]
         [Display(Name = "LastName")]
         public string LastName { get; set; } = "";
+        
+        [StringLength(100, ErrorMessage = "The {0} must be at least {2} and at max {1} characters long.", MinimumLength = 1)]
+        public string City { get; set; } = "";
+        
+        
+        [StringLength(100, ErrorMessage = "The {0} must be at least {2} and at max {1} characters long.", MinimumLength = 1)]
+        public string Club { get; set; } = "";
     }
 
 }

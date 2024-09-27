@@ -1,0 +1,57 @@
+@attribute [Route($"/{AppRoutes.Trainers}")]
+
+@using System.Linq.Dynamic.Core
+@using Microsoft.AspNetCore.Identity
+@using Microsoft.EntityFrameworkCore
+@using QuickUnity.Common
+@using QuickUnity.Components.Account
+@using QuickUnity.Components.Account.Pages.Manage
+@using QuickUnity.Entities.Enums
+@using QuickUnity.Components.Components
+@using QuickUnity.Data
+@using QuickUnity.Data.Tables
+@inject ApplicationDbContext Context;
+@inject SignInManager<ApplicationUser> SignInManager
+@inject UserManager<ApplicationUser> UserManager
+@inject IdentityUserAccessor UserAccessor
+@inject AuthenticationStateProvider AuthenticationStateProvider
+
+
+
+
+<RadzenDataList WrapItems="true" AllowPaging="false" Data="@persons" TItem="PersonalCardModel">
+    <Template Context="person">
+        <PersonalCard PersonalCardModel="person"></PersonalCard>
+    </Template>
+</RadzenDataList>
+
+<RadzenPager HorizontalAlign="HorizontalAlign.Right" Count="count" PageSize="@pageSize" PageNumbersCount="5"  />
+
+@code {
+    int pageSize = 10;
+    int count;
+
+    IEnumerable<PersonalCardModel> persons;
+    // private ApplicationUser _user;
+    private ProfileRow _profile;
+    private List<ProfileRow> trainersProfiles;
+
+    [CascadingParameter] private HttpContext HttpContext { get; set; } = default!;
+    
+    protected override async Task OnInitializedAsync()
+    {
+        var username = (await AuthenticationStateProvider.GetAuthenticationStateAsync()).User.Identity?.Name ?? throw new Exception("smth wrong with user");
+        
+        _profile = await Context.Set<ProfileRow>()
+            .Include(x => x.ApplicationUser)
+            .FirstAsync(x=>x.ApplicationUser.UserName == username);
+        trainersProfiles = Context.Set<ProfileRow>()
+            .Include(x=>x.Videos)
+            .Include(x => x.TrainerRow)
+            .ThenInclude(y => y.Apprentices).Where(z => z.TrainerRow.Apprentices.Contains(_profile)).ToList();
+        persons = trainersProfiles.Select(x => new PersonalCardModel(x)).ToList();
+    }
+
+
+
+}

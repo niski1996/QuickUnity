@@ -20,7 +20,14 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
             entity.HasKey(e => e.Id);
             entity.Property(e => e.Name).IsRequired().HasMaxLength(100);
             entity.Property(e => e.LastName).IsRequired().HasMaxLength(100);
+            entity.Property(e => e.ApplicationUserId).IsRequired().HasMaxLength(100);
+            entity.Property(e => e.Club).HasMaxLength(100);
+            entity.Property(e => e.City).HasMaxLength(100);
             entity.Property(e => e.JoinDate).HasDefaultValueSql("NOW()").ValueGeneratedOnAdd();
+            
+            entity.HasOne(p => p.TrainerRow)
+                .WithOne(t => t.ProfileRow)
+                .HasForeignKey<TrainerRow>(t => t.ProfileRowId); 
         });
         builder.Entity<VideoRow>(entity =>
         {
@@ -32,6 +39,7 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
         builder.Entity<TrainerRow>(entity =>
         {
             entity.HasKey(e => e.Id);
+            entity.Property(e => e.ProfileRowId).IsRequired().HasMaxLength(100);
             entity.Property(e => e.Id).ValueGeneratedOnAdd().HasDefaultValueSql("gen_random_uuid()");
         });
 
